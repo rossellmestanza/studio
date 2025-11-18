@@ -24,7 +24,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Home, ShoppingBag, List, PlusCircle, MoreHorizontal, Trash2, Edit, ClipboardList, DollarSign, Store, Upload, Clock, Phone, MapPin, Menu as MenuIcon } from 'lucide-react';
+import { Home, ShoppingBag, List, PlusCircle, MoreHorizontal, Trash2, Edit, ClipboardList, DollarSign, Store, Upload, Clock, Phone, MapPin, Menu as MenuIcon, LogOut } from 'lucide-react';
 import { menuItems, categories } from '@/lib/menu-data';
 import type { MenuItem } from '@/lib/types';
 import {
@@ -46,6 +46,9 @@ import {
 } from 'recharts';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import Link from 'next/link';
+import { useAuth } from '@/firebase';
+import { signOut } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
 
 
 // Mock data for orders
@@ -75,6 +78,13 @@ const locations = [
 export default function AdminDashboard() {
   const [activeView, setActiveView] = useState('dashboard');
   const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
+  const auth = useAuth();
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    await signOut(auth);
+    router.push('/auth');
+  };
 
   const renderContent = () => {
     switch (activeView) {
@@ -145,17 +155,23 @@ export default function AdminDashboard() {
 
            <h2 className="text-xl font-semibold capitalize sm:hidden">{activeView === 'local' ? "Mi Local" : activeView}</h2>
           
-          {activeView === 'products' && (
-            <Dialog open={isProductDialogOpen} onOpenChange={setIsProductDialogOpen}>
-              <DialogTrigger asChild>
-                <Button size="sm" className="gap-1">
-                  <PlusCircle className="h-4 w-4" />
-                  Añadir Producto
-                </Button>
-              </DialogTrigger>
-              <ProductDialog setDialogOpen={setIsProductDialogOpen} />
-            </Dialog>
-          )}
+           <div className="flex items-center gap-4">
+              {activeView === 'products' && (
+                <Dialog open={isProductDialogOpen} onOpenChange={setIsProductDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" className="gap-1">
+                      <PlusCircle className="h-4 w-4" />
+                      Añadir Producto
+                    </Button>
+                  </DialogTrigger>
+                  <ProductDialog setDialogOpen={setIsProductDialogOpen} />
+                </Dialog>
+              )}
+               <Button variant="outline" size="sm" onClick={handleSignOut}>
+                <LogOut className="mr-2 h-4 w-4" />
+                Cerrar Sesión
+              </Button>
+            </div>
         </header>
         <main className="flex-1 p-6">{renderContent()}</main>
       </div>
