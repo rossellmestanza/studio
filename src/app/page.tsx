@@ -9,9 +9,9 @@ export default function HomePage() {
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
       <main className="flex-grow">
+        <GalleryCarousel />
         <Favorites />
         <HomeMenuPreview />
-        <GalleryCarousel />
       </main>
       <Footer />
     </div>
