@@ -1,10 +1,11 @@
+
 'use client';
 
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, CookingPot, Moped, Package } from 'lucide-react';
+import { CheckCircle, CookingPot, Truck, Package } from 'lucide-react';
 import Link from 'next/link';
 
 // Mock data for user's orders
@@ -32,7 +33,7 @@ const userOrders = [
 const statusSteps = [
   { status: 'Recibido', icon: Package, description: 'Tu pedido ha sido recibido' },
   { status: 'En preparación', icon: CookingPot, description: 'Estamos preparando tu pedido' },
-  { status: 'En camino', icon: Moped, description: 'Tu pedido ya salió a tu domicilio' },
+  { status: 'En camino', icon: Truck, description: 'Tu pedido ya salió a tu domicilio' },
   { status: 'Entregado', icon: CheckCircle, description: 'Tu pedido ha sido entregado' },
 ];
 
