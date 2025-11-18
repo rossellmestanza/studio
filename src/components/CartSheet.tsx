@@ -56,7 +56,7 @@ export default function CartSheet() {
           )}
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-[400px] sm:w-[540px] flex flex-col">
+      <SheetContent className="w-[400px] sm:w-[540px] flex flex-col bg-card">
         <SheetHeader>
           <SheetTitle className="text-2xl">Tu Carrito</SheetTitle>
           <SheetDescription>

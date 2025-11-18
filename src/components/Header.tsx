@@ -16,7 +16,7 @@ export default function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-gray-900 text-white">
+    <header className="sticky top-0 z-40 w-full border-b border-gray-800 bg-black text-white">
       <div className="container mx-auto flex h-20 items-center justify-between px-4">
         <Link href="/" className="flex items-center space-x-2">
           <span className="text-4xl font-headline" style={{fontFamily: "'Ms Madi', cursive"}}>Fly</span>
