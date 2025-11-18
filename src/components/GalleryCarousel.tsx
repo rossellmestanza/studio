@@ -9,7 +9,6 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { Button } from '@/components/ui/button';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const heroItems = [
   {
@@ -24,7 +23,7 @@ const heroItems = [
 export default function GalleryCarousel() {
 
   return (
-    <section className="w-full bg-[#7b9f3b] relative">
+    <section className="w-full relative">
       <Carousel
         opts={{
           align: "start",
@@ -35,7 +34,7 @@ export default function GalleryCarousel() {
         <CarouselContent>
           {heroItems.map((item) => (
             <CarouselItem key={item.id}>
-              <div className="relative w-full h-[60vh] md:h-[70vh]">
+              <div className="relative w-full" style={{ height: 'calc(100vh - 80px)' }}>
                 <Image
                   src={item.imageUrl}
                   alt={item.title}
