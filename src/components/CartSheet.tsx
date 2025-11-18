@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/context/CartContext";
-import { ShoppingCart, Trash2 } from "lucide-react";
+import { ShoppingCart, Trash2, ShoppingBag } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -56,20 +56,19 @@ export default function CartSheet() {
           )}
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-[400px] sm:w-[540px] flex flex-col bg-card">
-        <SheetHeader>
-          <SheetTitle className="text-2xl">Tu Carrito</SheetTitle>
-          <SheetDescription>
-            Revisa los productos en tu carrito y finaliza tu pedido.
-          </SheetDescription>
+      <SheetContent className="w-[400px] sm:w-[440px] flex flex-col bg-background p-0">
+        <SheetHeader className="p-6 pb-4">
+          <SheetTitle className="text-2xl flex items-center gap-2">
+            <ShoppingBag className="h-6 w-6" /> Tu Pedido
+          </SheetTitle>
         </SheetHeader>
         <Separator />
         {cartItems.length > 0 ? (
           <>
-            <ScrollArea className="flex-grow my-4 pr-6">
-              <div className="space-y-4">
+            <ScrollArea className="flex-grow my-4">
+              <div className="space-y-4 px-6">
                 {cartItems.map((item) => (
-                  <div key={`${item.id}-${item.notes}`} className="flex items-start space-x-4 p-2 rounded-lg hover:bg-secondary">
+                  <div key={`${item.id}-${item.notes}`} className="flex items-center space-x-4 p-3 rounded-lg bg-card shadow-sm">
                     <div className="relative h-20 w-20 rounded-md overflow-hidden flex-shrink-0">
                        <Image
                           src={item.image}
@@ -80,49 +79,46 @@ export default function CartSheet() {
                        />
                     </div>
                     <div className="flex-grow">
-                      <p className="font-semibold">{item.name}</p>
-                      <p className="text-sm text-muted-foreground">S/ {item.price.toFixed(2)}</p>
+                      <p className="font-bold">{item.name}</p>
+                      <p className="text-sm text-primary font-bold">S/ {item.price.toFixed(2)}</p>
                       {item.notes && <p className="text-xs text-muted-foreground italic mt-1">Notas: {item.notes}</p>}
                        <div className="flex items-center space-x-2 mt-2">
                         <Button
                           variant="outline"
                           size="icon"
-                          className="h-6 w-6"
+                          className="h-7 w-7 bg-secondary"
                           onClick={() => updateItemQuantity(item.id, item.notes, item.quantity - 1)}
                         >
-                          <Minus className="h-3 w-3" />
+                          <Minus className="h-4 w-4" />
                         </Button>
-                        <span>{item.quantity}</span>
+                        <span className="font-bold w-4 text-center">{item.quantity}</span>
                         <Button
-                          variant="outline"
                           size="icon"
-                          className="h-6 w-6"
+                          className="h-7 w-7 bg-secondary text-secondary-foreground"
                           onClick={() => updateItemQuantity(item.id, item.notes, item.quantity + 1)}
                         >
-                          <Plus className="h-3 w-3" />
+                          <Plus className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
                     <div className="flex flex-col items-end">
-                      <p className="font-semibold text-right">S/ {(item.price * item.quantity).toFixed(2)}</p>
-                      <Button variant="ghost" size="icon" className="text-destructive h-8 w-8 mt-2" onClick={() => removeFromCart(item.id, item.notes)}>
-                        <Trash2 className="h-4 w-4" />
+                      <Button variant="ghost" size="icon" className="text-destructive h-8 w-8" onClick={() => removeFromCart(item.id, item.notes)}>
+                        <Trash2 className="h-5 w-5" />
                       </Button>
                     </div>
                   </div>
                 ))}
               </div>
             </ScrollArea>
-            <Separator />
-            <SheetFooter className="mt-auto">
-              <div className="w-full space-y-4 pt-4">
+            <SheetFooter className="mt-auto bg-card p-6 rounded-t-lg">
+              <div className="w-full space-y-4">
                 <div className="flex justify-between font-bold text-lg">
-                  <span>Total</span>
-                  <span>S/ {cartTotal.toFixed(2)}</span>
+                  <span>Total:</span>
+                  <span className="text-primary">S/ {cartTotal.toFixed(2)}</span>
                 </div>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button className="w-full text-lg py-6">Realizar Pedido</Button>
+                    <Button className="w-full text-lg py-6 bg-[#841515] hover:bg-[#6a1010] text-white">Pedir Ahora</Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
@@ -137,12 +133,11 @@ export default function CartSheet() {
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
-                <Button variant="outline" className="w-full" onClick={clearCart}>Vaciar Carrito</Button>
               </div>
             </SheetFooter>
           </>
         ) : (
-          <div className="flex-grow flex flex-col items-center justify-center space-y-4 text-center">
+          <div className="flex-grow flex flex-col items-center justify-center space-y-4 text-center px-6">
             <ShoppingCart className="h-16 w-16 text-muted-foreground" />
             <h3 className="font-semibold text-xl">Tu carrito está vacío</h3>
             <p className="text-muted-foreground">Agrega algunos platos deliciosos del menú para empezar.</p>
