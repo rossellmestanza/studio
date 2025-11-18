@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/carousel";
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import React from 'react';
+import Autoplay from "embla-carousel-autoplay"
 
 const heroItems = [
   {
@@ -42,10 +44,14 @@ const heroItems = [
 ];
 
 export default function GalleryCarousel() {
+  const plugin = React.useRef(
+    Autoplay({ delay: 5000, stopOnInteraction: true })
+  )
 
   return (
     <section className="w-full relative">
       <Carousel
+        plugins={[plugin.current]}
         opts={{
           align: "start",
           loop: true,
