@@ -24,7 +24,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Home, ShoppingBag, List, PlusCircle, MoreHorizontal, Trash2, Edit, ClipboardList, DollarSign, Store, Upload } from 'lucide-react';
+import { Home, ShoppingBag, List, PlusCircle, MoreHorizontal, Trash2, Edit, ClipboardList, DollarSign, Store, Upload, Clock, Phone, MapPin } from 'lucide-react';
 import { menuItems, categories } from '@/lib/menu-data';
 import type { MenuItem } from '@/lib/types';
 import {
@@ -509,6 +509,39 @@ function LocalManagement() {
               </div>
             </div>
              <Button>Guardar Cambios</Button>
+          </form>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Información de Contacto (Footer)</CardTitle>
+          <CardDescription>Edita la información que aparece en el pie de página.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form className="space-y-6">
+             <div className="space-y-2">
+              <Label htmlFor="footer-address">Dirección</Label>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input id="footer-address" className="pl-10" defaultValue="Av. Principal 123, Lima, Perú" />
+              </div>
+            </div>
+             <div className="space-y-2">
+              <Label htmlFor="footer-hours">Horario</Label>
+              <div className="relative">
+                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input id="footer-hours" className="pl-10" defaultValue="Lun - Dom: 11:00 AM - 11:00 PM" />
+              </div>
+            </div>
+             <div className="space-y-2">
+              <Label htmlFor="footer-phone">Teléfono</Label>
+               <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input id="footer-phone" className="pl-10" defaultValue="+51 949 992 147" />
+              </div>
+            </div>
+            <Button>Actualizar Contacto</Button>
           </form>
         </CardContent>
       </Card>
