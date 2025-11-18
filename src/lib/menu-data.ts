@@ -14,7 +14,7 @@ export const menuItems: MenuItem[] = [
     description: 'Trozos de lomo de res salteados con cebolla, tomate, ají amarillo y papas fritas. Acompañado de arroz.',
     price: 55.00,
     category: 'principales',
-    image: 'https://images.unsplash.com/photo-1626202425256-02e7379d714d?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    image: 'https://static.wixstatic.com/media/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png/v1/fill/w_568,h_320,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png',
     imageHint: 'lomo saltado',
   },
   {
@@ -23,7 +23,7 @@ export const menuItems: MenuItem[] = [
     description: 'Pechuga de gallina deshilachada en una cremosa salsa de ají amarillo, pan y leche. Servido con papas y huevo.',
     price: 48.00,
     category: 'principales',
-    image: 'https://images.unsplash.com/photo-1604243172027-e95250d4f3b5?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    image: 'https://static.wixstatic.com/media/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png/v1/fill/w_568,h_320,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png',
     imageHint: 'aji gallina',
   },
   {
@@ -32,7 +32,7 @@ export const menuItems: MenuItem[] = [
     description: 'Pescado fresco del día marinado en jugo de limón, con cebolla roja, ají limo y cilantro. Acompañado de camote y choclo.',
     price: 52.00,
     category: 'ceviches',
-    image: 'https://images.unsplash.com/photo-1633436375795-12b3b339712f?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    image: 'https://static.wixstatic.com/media/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png/v1/fill/w_568,h_320,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png',
     imageHint: 'ceviche peruvian',
   },
   {
@@ -41,7 +41,7 @@ export const menuItems: MenuItem[] = [
     description: 'Pastel de papa amarilla prensada y sazonada con ají amarillo y limón, relleno de pollo y mayonesa.',
     price: 35.00,
     category: 'entradas',
-    image: 'https://images.unsplash.com/photo-1587038995856-1c717725e27d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8cGVydXZpYW4lMjBjYXVzYXxlbnwwfHx8fDE3NjM0Mjg4NTJ8MA&ixlib=rb-4.1.0&q=80&w=1080',
+    image: 'https://static.wixstatic.com/media/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png/v1/fill/w_568,h_320,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png',
     imageHint: 'peruvian causa',
   },
    {
@@ -51,7 +51,7 @@ export const menuItems: MenuItem[] = [
     price: 65.00,
     originalPrice: 70.00,
     category: 'principales',
-    image: 'https://images.unsplash.com/photo-1599557421888-81d341de5a55?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    image: 'https://static.wixstatic.com/media/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png/v1/fill/w_568,h_320,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png',
     imageHint: 'roasted chicken salad',
   },
   {
@@ -61,7 +61,7 @@ export const menuItems: MenuItem[] = [
     price: 35.00,
     originalPrice: 42.00,
     category: 'principales',
-    image: 'https://images.unsplash.com/photo-1626082912437-d51b3d74a7f7?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    image: 'https://static.wixstatic.com/media/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png/v1/fill/w_568,h_320,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png',
     imageHint: 'half roasted chicken',
   },
   {
@@ -71,7 +71,7 @@ export const menuItems: MenuItem[] = [
     price: 20.00,
     originalPrice: 25.00,
     category: 'principales',
-    image: 'https://images.unsplash.com/photo-1626082894179-b4859a584518?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    image: 'https://static.wixstatic.com/media/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png/v1/fill/w_568,h_320,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png',
     imageHint: 'quarter roasted chicken',
   },
   {
@@ -81,7 +81,7 @@ export const menuItems: MenuItem[] = [
     price: 85.00,
     originalPrice: 95.00,
     category: 'principales',
-    image: 'https://images.unsplash.com/photo-1598515598144-b03598912328?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    image: 'https://static.wixstatic.com/media/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png/v1/fill/w_568,h_320,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png',
     imageHint: 'family roasted chicken',
   },
   {
@@ -90,7 +90,7 @@ export const menuItems: MenuItem[] = [
     description: 'Bebida tradicional peruana hecha de maíz morado, frutas y especias.',
     price: 12.00,
     category: 'bebidas',
-    image: 'https://images.unsplash.com/photo-1542518392-13317b1ee2a2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxwdXJwbGUlMjBkcmlua3xlbnwwfHx8fDE3NjM0Mjg4NTF8MA&ixlib=rb-4.1.0&q=80&w=1080',
+    image: 'https://static.wixstatic.com/media/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png/v1/fill/w_568,h_320,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png',
     imageHint: 'purple drink',
   },
   {
@@ -99,7 +99,7 @@ export const menuItems: MenuItem[] = [
     description: 'El cóctel bandera de Perú, preparado con pisco, jugo de limón, jarabe de goma y clara de huevo.',
     price: 28.00,
     category: 'bebidas',
-    image: 'https://images.unsplash.com/photo-1620065371451-4d8233e0f8de?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxjb2NrdGFpbCUyMGdsYXNzfGVufDB8fHx8MTc2MzQwMDgzOHww&ixlib=rb-4.1.0&q=80&w=1080',
+    image: 'https://static.wixstatic.com/media/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png/v1/fill/w_568,h_320,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png',
     imageHint: 'cocktail glass',
   },
   {
@@ -108,7 +108,7 @@ export const menuItems: MenuItem[] = [
     description: 'Dulce de leche cremoso (manjar blanco) cubierto con un merengue italiano al oporto.',
     price: 25.00,
     category: 'postres',
-    image: 'https://images.unsplash.com/photo-1744988870952-3103b7c23649?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxkZXNzZXJ0JTIwZ2xhc3N8ZW58MHx8fHwxNzYzMzMwMDg1fDA&ixlib=rb-4.1.0&q=80&w=1080',
+    image: 'https://static.wixstatic.com/media/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png/v1/fill/w_568,h_320,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png',
     imageHint: 'dessert glass',
   }
 ];
