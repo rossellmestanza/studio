@@ -60,7 +60,7 @@ export default function Header() {
         <div className="flex items-center space-x-4">
           <CartSheet />
           {!isUserLoading && !user && (
-            <Button asChild variant="outline" size="sm" className="hidden md:inline-flex border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black">
+            <Button asChild variant="outline" size="sm" className="hidden md:inline-flex bg-yellow-400 text-black border-yellow-400 hover:bg-yellow-400 hover:text-black">
               <Link href="/auth">Iniciar Sesión</Link>
             </Button>
           )}
