@@ -429,7 +429,7 @@ function CategoryManagement() {
                 </TableCell>
               </TableRow>
             ))}
-          </TableBody>_
+          </TableBody>
         </Table>
       </CardContent>
     </Card>
