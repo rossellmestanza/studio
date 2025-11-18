@@ -6,9 +6,9 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
   SheetFooter,
   SheetDescription,
+  SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,17 +18,6 @@ import { useCart } from "@/context/CartContext";
 import { ShoppingCart, Trash2, ShoppingBag } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { Minus, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -118,23 +107,9 @@ export default function CartSheet() {
                   <span>Total:</span>
                   <span className="text-primary">S/ {cartTotal.toFixed(2)}</span>
                 </div>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                     <Button className="w-full text-lg py-6 bg-[#841515] hover:bg-[#6a1010] text-white">Pedir Ahora</Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>¿Confirmar tu pedido?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Tu pedido será enviado a la cocina. ¿Estás seguro que quieres continuar?
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                      <AlertDialogAction onClick={handlePlaceOrder}>Confirmar</AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                <Button className="w-full text-lg py-6 bg-[#841515] hover:bg-[#6a1010] text-white" onClick={handlePlaceOrder}>
+                  Pedir Ahora
+                </Button>
               </div>
             </SheetFooter>
           </>
