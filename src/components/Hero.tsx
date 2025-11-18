@@ -15,13 +15,17 @@ import Link from 'next/link';
 const heroImages = [
     {
       "id": "hero-1",
-      "description": "Pollo a la leña",
+      "title_line_1": "Promoción 2x1",
+      "title_line_2": "Pollo Entero",
+      "description": "En todos nuestros pollos a la brasa",
       "imageUrl": "https://cdn.cuponidad.pe/images/Deals/polloalalenalinceofertas.jpg",
       "imageHint": "roasted chicken"
     },
     {
       "id": "hero-2",
-      "description": "Aji de gallina en plato hondo",
+      "title_line_1": "Sabor Inigualable",
+      "title_line_2": "Ají de Gallina",
+      "description": "La receta tradicional que te encanta",
       "imageUrl": "https://i.ytimg.com/vi/KfIK9IQixg4/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLAAkLhHY0GcxJOGvuJ6GlGqslnXRA",
       "imageHint": "aji gallina"
     }
@@ -39,7 +43,7 @@ export default function Hero() {
       >
         <CarouselContent className="h-full">
           {heroImages.map((item, index) => (
-            <CarouselItem key={index} className="h-full">
+            <CarouselItem key={item.id} className="h-full">
               <div className="relative w-full h-full">
                 <Image
                   src={item.imageUrl}
@@ -57,19 +61,17 @@ export default function Hero() {
                     <Sparkles className="absolute bottom-0 -right-16 h-10 w-10 text-yellow-300" />
                     
                     <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold uppercase tracking-tighter">
-                      <span className="block">Promoción 2x1</span>
-                      <span className="text-gray-300">Pollo Entero</span>
+                      <span className="block">{item.title_line_1}</span>
+                      <span className="text-gray-300">{item.title_line_2}</span>
                     </h1>
                   </div>
 
-                  <p className="mt-4 text-lg md:text-xl max-w-2xl relative">
-                    En todos nuestros pollos a la brasa
-                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-1 bg-primary/70 -skew-x-12"></span>
-                    <span className="relative">% DESCUENTO</span>
+                  <p className="mt-4 text-lg md:text-xl max-w-2xl">
+                    {item.description}
                   </p>
 
-                  <Button asChild size="lg" className="mt-8 bg-destructive hover:bg-destructive/90 text-destructive-foreground font-bold text-lg rounded-full px-8 py-6">
-                    <Link href="/carta">¡APROVECHA LA OFERTA!</Link>
+                  <Button asChild size="lg" className="mt-8 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-lg rounded-full px-8 py-6">
+                    <Link href="/carta">¡VER LA CARTA!</Link>
                   </Button>
                 </div>
               </div>
