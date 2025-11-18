@@ -60,7 +60,7 @@ export default function Header() {
         <div className="flex items-center space-x-4">
           <CartSheet />
           {!isUserLoading && !user && (
-            <Button asChild variant="outline" size="sm" className="hidden md:inline-flex bg-yellow-400 text-black border-yellow-400 hover:bg-yellow-400 hover:text-black">
+            <Button asChild variant="outline" size="sm" className="hidden md:inline-flex bg-yellow-400 text-black border-none hover:bg-yellow-400">
               <Link href="/auth">Iniciar Sesión</Link>
             </Button>
           )}
@@ -102,10 +102,7 @@ export default function Header() {
                      <DropdownMenuItem asChild>
                        <Link
                         href="/auth"
-                        className={cn(
-                          "py-2 px-4 text-lg justify-center text-yellow-400",
-                           pathname === "/auth" ? "bg-gray-800" : ""
-                        )}
+                        className="py-3 px-4 text-lg justify-center bg-yellow-400 text-black focus:bg-yellow-400 focus:text-black"
                       >
                         INICIAR SESIÓN
                       </Link>
