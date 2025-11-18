@@ -8,7 +8,6 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { Card, CardContent } from "@/components/ui/card";
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const galleryImages = [
@@ -21,7 +20,7 @@ const galleryImages = [
 
 export default function GalleryCarousel() {
   return (
-    <section className="w-full py-12 md:py-20 bg-card">
+    <section className="w-full py-12 md:py-20 bg-background">
       <div className="container mx-auto">
         <div className="text-center mb-10">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900" style={{fontFamily: "'PT Sans', sans-serif"}}>Galería de Sabores</h2>
@@ -31,33 +30,31 @@ export default function GalleryCarousel() {
         </div>
         <Carousel
           opts={{
-            align: "start",
             loop: true,
           }}
-          className="w-full max-w-4xl mx-auto"
+          className="w-full h-[500px] overflow-hidden"
         >
-          <CarouselContent>
+          <CarouselContent className="h-full">
             {galleryImages.map((image, index) => (
-              <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
-                <div className="p-1">
-                  <Card>
-                    <CardContent className="flex aspect-video items-center justify-center p-0 relative rounded-lg overflow-hidden">
-                       <Image
-                          src={image.imageUrl}
-                          alt={image.description}
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                          data-ai-hint={image.imageHint}
-                        />
-                    </CardContent>
-                  </Card>
+              <CarouselItem key={index} className="h-full">
+                <div className="relative w-full h-full">
+                  <Image
+                    src={image.imageUrl}
+                    alt={image.description}
+                    fill
+                    className="object-cover"
+                    sizes="100vw"
+                    data-ai-hint={image.imageHint}
+                  />
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                    <p className="text-white text-2xl font-bold text-center p-4">{image.description}</p>
+                  </div>
                 </div>
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
+          <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 text-white bg-white/20 hover:bg-white/30 border-none" />
+          <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 text-white bg-white/20 hover:bg-white/30 border-none" />
         </Carousel>
       </div>
     </section>
