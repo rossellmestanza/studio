@@ -12,21 +12,40 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
-import { User as FirebaseUser } from 'firebase/auth';
+import { User as FirebaseUser, FirebaseError } from 'firebase/auth';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
+
 
 export default function AuthPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const auth = useAuth();
   const firestore = useFirestore();
   const { user, isUserLoading } = useUser();
+  
+  const getFriendlyErrorMessage = (errorCode: string) => {
+    switch (errorCode) {
+      case 'auth/invalid-credential':
+        return 'El correo electrónico o la contraseña son incorrectos. Por favor, inténtalo de nuevo.';
+      case 'auth/email-already-in-use':
+        return 'Este correo electrónico ya está registrado. Por favor, inicia sesión.';
+      case 'auth/weak-password':
+        return 'La contraseña es demasiado débil. Debe tener al menos 6 caracteres.';
+      case 'auth/invalid-email':
+          return 'El formato del correo electrónico no es válido.';
+      default:
+        return 'Ocurrió un error inesperado. Por favor, inténtalo de nuevo más tarde.';
+    }
+  };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     try {
-      // We need to await here to get the user credential for the firestore write
       const userCredential = await initiateEmailSignUp(auth, email, password);
       if (userCredential && userCredential.user) {
         const user = userCredential.user;
@@ -37,14 +56,27 @@ export default function AuthPage() {
           role: 'user',
         });
       }
-    } catch (error) {
-      console.error("Error during sign up:", error);
+    } catch (err) {
+      if (err instanceof FirebaseError) {
+        setError(getFriendlyErrorMessage(err.code));
+      } else {
+        setError(getFriendlyErrorMessage(''));
+      }
     }
   };
 
-  const handleSignIn = (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    initiateEmailSignIn(auth, email, password);
+    setError(null);
+    try {
+      await initiateEmailSignIn(auth, email, password);
+    } catch (err) {
+       if (err instanceof FirebaseError) {
+        setError(getFriendlyErrorMessage(err.code));
+      } else {
+        setError(getFriendlyErrorMessage(''));
+      }
+    }
   };
   
   useEffect(() => {
@@ -73,12 +105,9 @@ export default function AuthPage() {
 
 
   if (isUserLoading) {
-    return <div>Cargando...</div>;
+    return <div className="flex min-h-screen items-center justify-center">Cargando...</div>;
   }
-
-  // We don't redirect here anymore, useEffect will handle it
-  // to avoid flashing the auth page.
-
+  
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
@@ -104,6 +133,15 @@ export default function AuthPage() {
                     <Label htmlFor="login-password">Contraseña</Label>
                     <Input id="login-password" type="password" required onChange={(e) => setPassword(e.target.value)} />
                   </div>
+                   {error && (
+                    <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>Error</AlertTitle>
+                        <AlertDescription>
+                            {error}
+                        </AlertDescription>
+                    </Alert>
+                    )}
                   <Button type="submit" className="w-full bg-[#E5B80B] hover:bg-[#E5B80B] text-black border-none">
                     Iniciar Sesión
                   </Button>
@@ -123,6 +161,15 @@ export default function AuthPage() {
                     <Label htmlFor="register-password">Contraseña</Label>
                     <Input id="register-password" type="password" required onChange={(e) => setPassword(e.target.value)} />
                   </div>
+                   {error && (
+                    <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>Error</AlertTitle>
+                        <AlertDescription>
+                            {error}
+                        </AlertDescription>
+                    </Alert>
+                    )}
                   <Button type="submit" className="w-full bg-[#E5B80B] hover:bg-[#E5B80B] text-black border-none">
                     Crear Cuenta
                   </Button>
