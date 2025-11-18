@@ -22,7 +22,7 @@ export default function HomeMenuPreview() {
         </div>
 
         <div className="text-center mt-12">
-          <Button asChild size="lg" className="bg-[#851515] text-white hover:bg-[#6a1010]">
+          <Button asChild size="lg" className="bg-[#851515] hover:bg-[#6a1010] text-white">
             <Link href="/carta">Ver toda la carta</Link>
           </Button>
         </div>

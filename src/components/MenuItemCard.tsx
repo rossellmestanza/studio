@@ -30,10 +30,6 @@ export default function MenuItemCard({ item, variant = 'default' }: { item: Menu
   
   const handleSimpleAddToCart = () => {
     addToCart(item, 1, '');
-    toast({
-      title: "¡Agregado!",
-      description: `${item.name} se agregó a tu carrito.`,
-    });
   };
 
   if (variant === 'compact') {
@@ -52,7 +48,7 @@ export default function MenuItemCard({ item, variant = 'default' }: { item: Menu
           </div>
         </CardHeader>
         <CardContent className="flex-grow p-4">
-            <CardTitle className="text-lg font-bold mb-2">{item.name}</CardTitle>
+            <h3 className="text-lg font-bold mb-2">{item.name.toUpperCase()}</h3>
             <p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>
         </CardContent>
         <CardFooter className="flex justify-between items-center p-4 pt-0 mt-auto">
@@ -62,7 +58,7 @@ export default function MenuItemCard({ item, variant = 'default' }: { item: Menu
               <p className="text-sm text-muted-foreground line-through">S/ {item.originalPrice.toFixed(2)}</p>
             )}
           </div>
-          <Button size="icon" className="rounded-full bg-destructive text-destructive-foreground h-9 w-9" onClick={handleSimpleAddToCart}>
+          <Button size="icon" className="rounded-full bg-[#851515] hover:bg-[#6a1010] text-destructive-foreground h-9 w-9" onClick={handleSimpleAddToCart}>
             <ShoppingCart className="h-4 w-4" />
           </Button>
         </CardFooter>
