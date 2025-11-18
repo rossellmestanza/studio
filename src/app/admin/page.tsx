@@ -167,9 +167,8 @@ export default function AdminDashboard() {
                   <ProductDialog setDialogOpen={setIsProductDialogOpen} />
                 </Dialog>
               )}
-               <Button variant="outline" size="sm" onClick={handleSignOut}>
-                <LogOut className="mr-2 h-4 w-4" />
-                Cerrar Sesión
+               <Button variant="outline" size="icon" onClick={handleSignOut} aria-label="Cerrar Sesión">
+                <LogOut className="h-4 w-4" />
               </Button>
             </div>
         </header>
@@ -677,5 +676,7 @@ function LocationDialog({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) =>
     </DialogContent>
   );
 }
+
+    
 
     
