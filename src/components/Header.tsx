@@ -44,6 +44,7 @@ export default function Header() {
           ))}
         </nav>
         <div className="flex items-center space-x-4">
+          <CartSheet />
           <div className="md:hidden">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -68,7 +69,6 @@ export default function Header() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          <CartSheet />
         </div>
       </div>
     </header>
