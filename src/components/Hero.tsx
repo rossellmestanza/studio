@@ -15,8 +15,8 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const heroImages = [
   PlaceHolderImages.find(img => img.id === 'lomo-saltado'),
+  PlaceHolderImages.find(img => img.id === 'aji-de-gallina'),
   PlaceHolderImages.find(img => img.id === 'ceviche'),
-  PlaceHolderImages.find(img => img.id === 'aji-de-gallina')
 ].filter(Boolean) as any[];
 
 
