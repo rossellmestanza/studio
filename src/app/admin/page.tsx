@@ -24,7 +24,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Home, ShoppingBag, List, PlusCircle, MoreHorizontal, Trash2, Edit, ClipboardList, DollarSign } from 'lucide-react';
+import { Home, ShoppingBag, List, PlusCircle, MoreHorizontal, Trash2, Edit, ClipboardList, DollarSign, Store, Upload } from 'lucide-react';
 import { menuItems, categories } from '@/lib/menu-data';
 import type { MenuItem } from '@/lib/types';
 import {
@@ -63,6 +63,12 @@ const monthlyRevenue = [
     { month: 'Junio', revenue: 2300 },
 ];
 
+const locations = [
+  { id: 'san-isidro', name: 'Local San Isidro', address: 'Av. Javier Prado Este 456, San Isidro', phone: '+51 949 992 147' },
+  { id: 'miraflores', name: 'Local Miraflores', address: 'Av. Larco 789, Miraflores', phone: '+51 949 992 148' },
+  { id: 'surco', name: 'Local Surco', address: 'Av. Primavera 321, Surco', phone: '+51 949 992 149' },
+];
+
 
 export default function AdminDashboard() {
   const [activeView, setActiveView] = useState('dashboard');
@@ -76,6 +82,8 @@ export default function AdminDashboard() {
         return <CategoryManagement />;
       case 'orders':
         return <OrderManagement />;
+      case 'local':
+        return <LocalManagement />;
       case 'dashboard':
       default:
         return <DashboardOverview />;
@@ -105,11 +113,15 @@ export default function AdminDashboard() {
             <List className="mr-2 h-4 w-4" />
             Categorías
           </Button>
+           <Button variant={activeView === 'local' ? 'secondary' : 'ghost'} className="justify-start" onClick={() => setActiveView('local')}>
+            <Store className="mr-2 h-4 w-4" />
+            Mi Local
+          </Button>
         </nav>
       </aside>
       <div className="flex flex-1 flex-col">
         <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b bg-background px-6">
-           <h2 className="text-xl font-semibold capitalize">{activeView}</h2>
+           <h2 className="text-xl font-semibold capitalize">{activeView === 'local' ? "Mi Local" : activeView}</h2>
           {activeView === 'products' && (
             <Dialog open={isProductDialogOpen} onOpenChange={setIsProductDialogOpen}>
               <DialogTrigger asChild>
@@ -235,7 +247,7 @@ function OrderManagement() {
                 <TableCell>{order.date}</TableCell>
                 <TableCell>S/ {order.total.toFixed(2)}</TableCell>
                 <TableCell>
-                  <Badge variant={getStatusVariant(order.status)}>{order.status}</Badge>
+                  <Badge variant={getStatusVariant(order.status) as any}>{order.status}</Badge>
                 </TableCell>
                 <TableCell className="text-right">
                    <DropdownMenu>
@@ -465,6 +477,131 @@ function CategoryDialog({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) =>
   );
 }
 
-    
+function LocalManagement() {
+  const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false);
 
-    
+  const handleDelete = (id: string) => {
+    alert(`(Simulado) Local con ID: ${id} eliminado.`);
+  };
+
+  return (
+    <div className="grid gap-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Información del Negocio</CardTitle>
+          <CardDescription>Actualiza los datos generales de tu restaurante.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="business-name">Nombre del Negocio</Label>
+              <Input id="business-name" defaultValue="Fly" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="logo">Logo</Label>
+              <div className="flex items-center gap-4">
+                <div className="w-24 h-24 bg-muted rounded-md flex items-center justify-center">
+                  <span className="text-2xl font-bold" style={{fontFamily: "'Ms Madi', cursive"}}>Fly</span>
+                </div>
+                <Button variant="outline" type="button">
+                  <Upload className="mr-2 h-4 w-4" /> Cambiar Logo
+                </Button>
+              </div>
+            </div>
+             <Button>Guardar Cambios</Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Gestionar Locales</CardTitle>
+            <CardDescription>Añade o edita las sucursales de tu negocio.</CardDescription>
+          </div>
+          <Dialog open={isLocationDialogOpen} onOpenChange={setIsLocationDialogOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="gap-1">
+                <PlusCircle className="h-4 w-4" />
+                Añadir Local
+              </Button>
+            </DialogTrigger>
+            <LocationDialog setDialogOpen={setIsLocationDialogOpen} />
+          </Dialog>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nombre</TableHead>
+                <TableHead>Dirección</TableHead>
+                <TableHead>Teléfono</TableHead>
+                <TableHead className="text-right">Acciones</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {locations.map((loc) => (
+                <TableRow key={loc.id}>
+                  <TableCell className="font-medium">{loc.name}</TableCell>
+                  <TableCell>{loc.address}</TableCell>
+                  <TableCell>{loc.phone}</TableCell>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => setIsLocationDialogOpen(true)}>
+                          <Edit className="mr-2 h-4 w-4" /> Editar
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(loc.id)}>
+                          <Trash2 className="mr-2 h-4 w-4" /> Eliminar
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+
+function LocationDialog({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) => void; }) {
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    alert('(Simulado) Local guardado.');
+    setDialogOpen(false);
+  };
+  
+  return (
+     <DialogContent className="sm:max-w-[480px]">
+      <DialogHeader>
+        <DialogTitle>Añadir/Editar Local</DialogTitle>
+      </DialogHeader>
+      <form onSubmit={handleSubmit} className="grid gap-4 py-4">
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="location-name" className="text-right">Nombre</Label>
+          <Input id="location-name" placeholder="Ej: Local Miraflores" className="col-span-3" />
+        </div>
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="location-address" className="text-right">Dirección</Label>
+          <Input id="location-address" placeholder="Ej: Av. Larco 123" className="col-span-3" />
+        </div>
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="location-phone" className="text-right">Teléfono</Label>
+          <Input id="location-phone" placeholder="Ej: +51 987654321" className="col-span-3" />
+        </div>
+        <DialogFooter>
+          <Button type="submit">Guardar</Button>
+        </DialogFooter>
+      </form>
+    </DialogContent>
+  );
+}
