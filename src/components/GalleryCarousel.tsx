@@ -16,6 +16,8 @@ const galleryImages = [
   PlaceHolderImages.find(img => img.id === 'aji-de-gallina'),
   PlaceHolderImages.find(img => img.id === 'causa'),
   PlaceHolderImages.find(img => img.id === 'pisco-sour'),
+  PlaceHolderImages.find(img => img.id === 'suspiro-limena'),
+  PlaceHolderImages.find(img => img.id === 'chicha-morada'),
 ].filter(Boolean) as (typeof PlaceHolderImages)[0][];
 
 export default function GalleryCarousel() {
