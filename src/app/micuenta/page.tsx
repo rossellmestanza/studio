@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -78,13 +78,14 @@ export default function MyAccountPage() {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
 
-  if (isUserLoading) {
-    return <div className="flex justify-center items-center min-h-screen">Cargando...</div>;
-  }
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.push('/auth');
+    }
+  }, [user, isUserLoading, router]);
 
-  if (!user && !isUserLoading) {
-    router.push('/auth');
-    return null;
+  if (isUserLoading || !user) {
+    return <div className="flex justify-center items-center min-h-screen">Cargando...</div>;
   }
 
   const handleSearchOrder = (e: React.FormEvent) => {
