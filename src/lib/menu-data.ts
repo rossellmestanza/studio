@@ -3,6 +3,7 @@ import { Soup, Beef, GlassWater, Cake, Fish } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const getImage = (id: string) => PlaceHolderImages.find(img => img.id === id);
+const newImageUrl = "https://static.wixstatic.com/media/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png/v1/fill/w_568,h_320,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png";
 
 export const categories: MenuCategory[] = [
   { id: 'entradas', name: 'Entradas', icon: Soup },
@@ -19,8 +20,8 @@ export const menuItems: MenuItem[] = [
     description: 'Trozos de lomo de res salteados con cebolla, tomate, ají amarillo y papas fritas. Acompañado de arroz.',
     price: 55.00,
     category: 'principales',
-    image: getImage('lomo-saltado')?.imageUrl || '',
-    imageHint: getImage('lomo-saltado')?.imageHint || 'lomo saltado',
+    image: newImageUrl,
+    imageHint: 'lomo saltado',
   },
   {
     id: 'aji-de-gallina',
@@ -28,8 +29,8 @@ export const menuItems: MenuItem[] = [
     description: 'Pechuga de gallina deshilachada en una cremosa salsa de ají amarillo, pan y leche. Servido con papas y huevo.',
     price: 48.00,
     category: 'principales',
-    image: getImage('aji-de-gallina')?.imageUrl || '',
-    imageHint: getImage('aji-de-gallina')?.imageHint || 'aji gallina',
+    image: newImageUrl,
+    imageHint: 'aji gallina',
   },
   {
     id: 'ceviche-clasico',
@@ -37,8 +38,8 @@ export const menuItems: MenuItem[] = [
     description: 'Pescado fresco del día marinado en jugo de limón, con cebolla roja, ají limo y cilantro. Acompañado de camote y choclo.',
     price: 52.00,
     category: 'ceviches',
-    image: getImage('ceviche')?.imageUrl || '',
-    imageHint: getImage('ceviche')?.imageHint || 'ceviche peruvian',
+    image: newImageUrl,
+    imageHint: 'ceviche peruvian',
   },
   {
     id: 'causa-limena',
@@ -46,8 +47,8 @@ export const menuItems: MenuItem[] = [
     description: 'Pastel de papa amarilla prensada y sazonada con ají amarillo y limón, relleno de pollo y mayonesa.',
     price: 35.00,
     category: 'entradas',
-    image: getImage('causa')?.imageUrl || '',
-    imageHint: getImage('causa')?.imageHint || 'peruvian causa',
+    image: newImageUrl,
+    imageHint: 'peruvian causa',
   },
    {
     id: 'pollo-brasa',
@@ -56,8 +57,8 @@ export const menuItems: MenuItem[] = [
     price: 65.00,
     originalPrice: 70.00,
     category: 'principales',
-    image: getImage('pollo-brasa-entero')?.imageUrl || '',
-    imageHint: getImage('pollo-brasa-entero')?.imageHint || 'roasted chicken salad',
+    image: newImageUrl,
+    imageHint: 'roasted chicken salad',
   },
   {
     id: 'medio-pollo-brasa',
@@ -66,8 +67,8 @@ export const menuItems: MenuItem[] = [
     price: 35.00,
     originalPrice: 42.00,
     category: 'principales',
-    image: getImage('medio-pollo-brasa')?.imageUrl || '',
-    imageHint: getImage('medio-pollo-brasa')?.imageHint || 'half roasted chicken',
+    image: newImageUrl,
+    imageHint: 'half roasted chicken',
   },
   {
     id: 'cuarto-pollo-brasa',
@@ -76,8 +77,8 @@ export const menuItems: MenuItem[] = [
     price: 20.00,
     originalPrice: 25.00,
     category: 'principales',
-    image: getImage('cuarto-pollo-brasa')?.imageUrl || '',
-    imageHint: getImage('cuarto-pollo-brasa')?.imageHint || 'quarter roasted chicken',
+    image: newImageUrl,
+    imageHint: 'quarter roasted chicken',
   },
   {
     id: 'pollo-brasa-familiar',
@@ -86,8 +87,8 @@ export const menuItems: MenuItem[] = [
     price: 85.00,
     originalPrice: 95.00,
     category: 'principales',
-    image: getImage('pollo-brasa-familiar')?.imageUrl || '',
-    imageHint: getImage('pollo-brasa-familiar')?.imageHint || 'family roasted chicken',
+    image: newImageUrl,
+    imageHint: 'family roasted chicken',
   },
   {
     id: 'chicha-morada',
@@ -95,8 +96,8 @@ export const menuItems: MenuItem[] = [
     description: 'Bebida tradicional peruana hecha de maíz morado, frutas y especias.',
     price: 12.00,
     category: 'bebidas',
-    image: getImage('chicha-morada')?.imageUrl || '',
-    imageHint: getImage('chicha-morada')?.imageHint || 'purple drink',
+    image: newImageUrl,
+    imageHint: 'purple drink',
   },
   {
     id: 'pisco-sour',
@@ -104,8 +105,8 @@ export const menuItems: MenuItem[] = [
     description: 'El cóctel bandera de Perú, preparado con pisco, jugo de limón, jarabe de goma y clara de huevo.',
     price: 28.00,
     category: 'bebidas',
-    image: getImage('pisco-sour')?.imageUrl || '',
-    imageHint: getImage('pisco-sour')?.imageHint || 'cocktail glass',
+    image: newImageUrl,
+    imageHint: 'cocktail glass',
   },
   {
     id: 'suspiro-limena',
@@ -113,7 +114,7 @@ export const menuItems: MenuItem[] = [
     description: 'Dulce de leche cremoso (manjar blanco) cubierto con un merengue italiano al oporto.',
     price: 25.00,
     category: 'postres',
-    image: getImage('suspiro-limena')?.imageUrl || '',
-    imageHint: getImage('suspiro-limena')?.imageHint || 'dessert glass',
+    image: newImageUrl,
+    imageHint: 'dessert glass',
   }
 ];
