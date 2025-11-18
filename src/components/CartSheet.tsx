@@ -47,7 +47,7 @@ export default function CartSheet() {
           )}
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-[400px] sm:w-[440px] flex flex-col bg-background p-0">
+      <SheetContent className="w-full sm:max-w-md flex flex-col bg-background p-0">
         <SheetHeader className="p-6 pb-4">
           <SheetTitle className="text-2xl flex items-center gap-2">
             <ShoppingBag className="h-6 w-6" /> Tu Pedido
