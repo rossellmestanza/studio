@@ -20,11 +20,19 @@ const galleryImages = [
 
 export default function GalleryCarousel() {
   return (
-    <section className="w-full py-12 md:py-20 bg-background">
-      <div className="container mx-auto">
+    <section className="relative w-full py-12 md:py-20">
+       <Image
+        src="https://images.unsplash.com/photo-1547573854-74d2a71d0826?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+        alt="Fondo de madera oscura"
+        fill
+        className="object-cover"
+        data-ai-hint="dark wood"
+      />
+      <div className="absolute inset-0 bg-black/70" />
+      <div className="container mx-auto relative">
         <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900" style={{fontFamily: "'PT Sans', sans-serif"}}>Galería de Sabores</h2>
-          <p className="mt-2 text-md md:text-lg text-muted-foreground max-w-2xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-bold text-white" style={{fontFamily: "'PT Sans', sans-serif"}}>Galería de Sabores</h2>
+          <p className="mt-2 text-md md:text-lg text-gray-300 max-w-2xl mx-auto">
             Un vistazo a la pasión que ponemos en cada plato.
           </p>
         </div>
