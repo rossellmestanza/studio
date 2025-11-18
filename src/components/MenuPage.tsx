@@ -26,13 +26,13 @@ export default function MenuPage() {
 
       <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
         <Tabs defaultValue="all" onValueChange={setActiveTab} className="w-full md:w-auto">
-          <TabsList className="grid grid-cols-2 sm:grid-cols-4 md:flex h-auto">
-            <TabsTrigger value="all" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Todos</TabsTrigger>
+          <TabsList className="grid grid-cols-2 sm:grid-cols-4 md:flex h-auto bg-transparent p-0">
+            <TabsTrigger value="all" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:rounded-md rounded-md mr-2 bg-secondary">Todos</TabsTrigger>
             {categories.map((category) => (
               <TabsTrigger 
                 key={category.id} 
                 value={category.id}
-                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:rounded-md rounded-md mr-2 bg-secondary"
               >
                 {category.name.toUpperCase()}
               </TabsTrigger>
@@ -44,7 +44,7 @@ export default function MenuPage() {
           <Input
             type="search"
             placeholder="Buscar..."
-            className="pl-10"
+            className="pl-10 bg-white"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
