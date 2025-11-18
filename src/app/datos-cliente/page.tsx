@@ -13,7 +13,7 @@ import { useCart } from '@/context/CartContext';
 import { useRouter } from 'next/navigation';
 
 export default function DatosClientePage() {
-  const { cartTotal } = useCart();
+  const { setCustomerData } = useCart();
   const router = useRouter();
   const [formData, setFormData] = useState({
     name: '',
@@ -29,12 +29,8 @@ export default function DatosClientePage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically send the order to your backend
-    console.log('Order submitted:', {
-      ...formData,
-      total: cartTotal,
-    });
-    router.push('/confirmacion');
+    setCustomerData(formData);
+    router.push('/confirmar-pedido');
   };
 
   return (

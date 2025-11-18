@@ -1,8 +1,16 @@
+
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import type { CartItem, MenuItem } from '@/lib/types';
 import { useToast } from "@/hooks/use-toast";
+
+interface CustomerData {
+  name: string;
+  phone: string;
+  address: string;
+  reference: string;
+}
 
 interface CartContextType {
   cartItems: CartItem[];
@@ -12,12 +20,15 @@ interface CartContextType {
   clearCart: () => void;
   cartTotal: number;
   cartCount: number;
+  customerData: CustomerData | null;
+  setCustomerData: (data: CustomerData) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [customerData, setCustomerData] = useState<CustomerData | null>(null);
   const { toast } = useToast();
 
   const addToCart = (item: MenuItem, quantity: number, notes: string) => {
@@ -71,7 +82,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         updateItemQuantity,
         clearCart,
         cartTotal,
-        cartCount
+        cartCount,
+        customerData,
+        setCustomerData,
       }}
     >
       {children}
