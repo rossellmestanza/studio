@@ -50,7 +50,7 @@ export default function GalleryCarousel() {
                   <p className="text-lg md:text-xl text-white mt-2" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.5)' }}>
                     {item.description}
                   </p>
-                  <Button className="mt-6 bg-[#d93b3b] hover:bg-red-700 text-white font-bold text-lg px-8 py-6 rounded-lg shadow-lg">
+                  <Button className="mt-6 bg-[#841515] hover:bg-[#6a1010] text-white font-bold text-lg px-8 py-6 rounded-lg shadow-lg">
                     {item.buttonText}
                   </Button>
                 </div>
