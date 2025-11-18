@@ -8,90 +8,60 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { Button } from '@/components/ui/button';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
-const galleryItems = [
+const heroItems = [
   {
-    id: "gallery-ceviche",
-    title: "Ceviche Fresco",
-    description: "La frescura del mar en tu plato.",
-    imageId: "ceviche"
+    id: "hero-delivery",
+    title: "DELIVERY GRATIS",
+    description: "Todo el día en compras mayores a S/. 30",
+    buttonText: "¡ORDENA YA!",
+    imageUrl: "https://static.wixstatic.com/media/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png/v1/fill/w_568,h_320,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png"
   },
-  {
-    id: "gallery-lomo",
-    title: "Lomo Saltado",
-    description: "Sabor intenso que te encantará.",
-    imageId: "lomo-saltado"
-  },
-  {
-    id: "gallery-aji",
-    title: "Ají de Gallina",
-    description: "Cremosidad y tradición en cada bocado.",
-    imageId: "aji-de-gallina"
-  },
-  {
-    id: "gallery-causa",
-    title: "Causa Limeña",
-    description: "Una explosión de sabor peruano.",
-    imageId: "causa"
-  }
 ];
 
 export default function GalleryCarousel() {
-  const getImage = (id: string) => PlaceHolderImages.find(img => img.id === id);
 
   return (
-    <section 
-      className="w-full py-12 md:py-20 relative bg-cover bg-center" 
-      style={{ backgroundImage: "url('https://images.unsplash.com/photo-1593361688533-31a89467d35b?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')" }}
-    >
-      <div className="absolute inset-0 bg-black/60"></div>
-      <div className="container mx-auto relative z-10">
-        <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl font-bold text-white">Galería de Sabores</h2>
-          <p className="mt-2 text-md md:text-lg text-gray-300 max-w-2xl mx-auto">
-            Un vistazo a la pasión que ponemos en cada plato.
-          </p>
-        </div>
-
-        <Carousel
-          opts={{
-            align: "start",
-            loop: true,
-          }}
-          className="w-full"
-        >
-          <CarouselContent className="-ml-4">
-            {galleryItems.map((item) => {
-              const image = getImage(item.imageId);
-              return (
-                <CarouselItem key={item.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
-                  <div className="p-1">
-                    <div className="relative aspect-video w-full h-full rounded-lg overflow-hidden">
-                       {image && (
-                        <Image
-                          src={image.imageUrl}
-                          alt={item.title}
-                          fill
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                          className="object-cover"
-                          data-ai-hint={image.imageHint}
-                        />
-                      )}
-                      <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-center p-4">
-                        <h3 className="text-2xl font-bold text-white">{item.title}</h3>
-                        <p className="text-gray-200 mt-2">{item.description}</p>
-                      </div>
-                    </div>
-                  </div>
-                </CarouselItem>
-              );
-            })}
-          </CarouselContent>
-          <CarouselPrevious className="absolute left-[-20px] top-1/2 -translate-y-1/2 text-white bg-black/30 hover:bg-black/60 border-none" />
-          <CarouselNext className="absolute right-[-20px] top-1/2 -translate-y-1/2 text-white bg-black/30 hover:bg-black/60 border-none" />
-        </Carousel>
-      </div>
+    <section className="w-full bg-[#7b9f3b] relative">
+      <Carousel
+        opts={{
+          align: "start",
+          loop: true,
+        }}
+        className="w-full"
+      >
+        <CarouselContent>
+          {heroItems.map((item) => (
+            <CarouselItem key={item.id}>
+              <div className="relative w-full h-[60vh] md:h-[70vh]">
+                <Image
+                  src={item.imageUrl}
+                  alt={item.title}
+                  fill
+                  sizes="100vw"
+                  className="object-contain"
+                  data-ai-hint="delivery chicken"
+                />
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
+                  <h2 className="text-4xl md:text-6xl font-extrabold text-white" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>
+                    {item.title}
+                  </h2>
+                  <p className="text-lg md:text-xl text-white mt-2" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.5)' }}>
+                    {item.description}
+                  </p>
+                  <Button className="mt-6 bg-[#d93b3b] hover:bg-red-700 text-white font-bold text-lg px-8 py-6 rounded-lg shadow-lg">
+                    {item.buttonText}
+                  </Button>
+                </div>
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 text-black bg-yellow-400 hover:bg-yellow-500 border-none" />
+        <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 text-black bg-yellow-400 hover:bg-yellow-500 border-none" />
+      </Carousel>
     </section>
   )
 }
