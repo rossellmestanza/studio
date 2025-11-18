@@ -2,6 +2,7 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { CartProvider } from '@/context/CartContext';
+import WhatsAppButton from '@/components/WhatsAppButton';
 
 export const metadata: Metadata = {
   title: 'Fly Menú Digital',
@@ -27,6 +28,7 @@ export default function RootLayout({
           {children}
         </CartProvider>
         <Toaster />
+        <WhatsAppButton phoneNumber="+51949992147" />
       </body>
     </html>
   );
