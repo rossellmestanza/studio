@@ -8,6 +8,13 @@ import MenuItemCard from "./MenuItemCard";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 export default function HomeMenuPreview() {
   const [activeTab, setActiveTab] = useState("all");
@@ -27,7 +34,22 @@ export default function HomeMenuPreview() {
         </div>
 
         <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-          <Tabs defaultValue="all" onValueChange={setActiveTab} className="w-full md:w-auto">
+          <div className="w-full md:hidden">
+             <Select onValueChange={setActiveTab} defaultValue="all">
+              <SelectTrigger className="w-full bg-white">
+                <SelectValue placeholder="Selecciona una categoría" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                {categories.map((category) => (
+                  <SelectItem key={category.id} value={category.id}>
+                    {category.name.toUpperCase()}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Tabs defaultValue="all" onValueChange={setActiveTab} className="w-full md:w-auto hidden md:block">
             <TabsList className="grid grid-cols-2 sm:grid-cols-4 md:flex h-auto bg-transparent p-0">
               <TabsTrigger value="all" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:rounded-md rounded-md mr-2 bg-secondary">Todos</TabsTrigger>
               {categories.map((category) => (
@@ -53,7 +75,7 @@ export default function HomeMenuPreview() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8">
           {filteredMenuItems.map((item) => (
             <MenuItemCard key={item.id} item={item} variant="compact" />
           ))}

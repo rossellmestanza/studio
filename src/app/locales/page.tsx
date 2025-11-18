@@ -30,7 +30,7 @@ export default function LocalesPage() {
       <Header />
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="text-center mb-12">
-            <h1 className="text-5xl md:text-6xl font-headline text-primary">Nuestros Locales</h1>
+            <h1 className="text-4xl md:text-6xl font-headline text-primary">Nuestros Locales</h1>
             <p className="text-muted-foreground mt-2 text-lg">Encuentra tu sabor peruano más cercano</p>
         </div>
 

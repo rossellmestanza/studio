@@ -17,7 +17,7 @@ export default function Favorites() {
   return (
     <section className="w-full py-12 md:py-20" style={{ backgroundColor: '#f7b602' }}>
       <div className="container mx-auto">
-        <div className="text-center mb-10">
+        <div className="text-center mb-10 px-4">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900">LOS FAVORITOS DE CASA</h2>
           <p className="mt-2 text-md md:text-lg text-gray-800 max-w-2xl mx-auto">
             Los más pedidos y sabrosos de nuestra carta. Una experiencia que no querrás perderte.
@@ -29,19 +29,19 @@ export default function Favorites() {
             align: "start",
             loop: true,
           }}
-          className="w-full"
+          className="w-full px-12 md:px-0"
         >
           <CarouselContent className="-ml-4">
             {favoriteItems.map((item) => (
-              <CarouselItem key={item.id} className="pl-4 md:basis-1/2 lg:basis-1/4">
+              <CarouselItem key={item.id} className="pl-4 sm:basis-1/2 lg:basis-1/4">
                 <div className="p-1">
                   <MenuItemCard item={item} variant="compact" />
                 </div>
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="absolute left-[-20px] top-1/2 -translate-y-1/2 text-gray-800 bg-white/50 hover:bg-white/80 border-none" />
-          <CarouselNext className="absolute right-[-20px] top-1/2 -translate-y-1/2 text-gray-800 bg-white/50 hover:bg-white/80 border-none" />
+          <CarouselPrevious className="absolute left-[-5px] top-1/2 -translate-y-1/2 text-gray-800 bg-white/50 hover:bg-white/80 border-none md:left-[-20px]" />
+          <CarouselNext className="absolute right-[-5px] top-1/2 -translate-y-1/2 text-gray-800 bg-white/50 hover:bg-white/80 border-none md:right-[-20px]" />
         </Carousel>
       </div>
     </section>

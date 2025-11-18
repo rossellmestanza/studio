@@ -41,12 +41,12 @@ export default function MenuItemCard({ item, variant = 'default' }: { item: Menu
       <Link href={`/producto/${item.id}`} className="h-full block">
        <Card className="flex flex-col h-full overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 rounded-lg bg-card">
         <CardHeader className="p-0">
-          <div className="relative w-full h-48">
+          <div className="relative w-full aspect-[4/3]">
             <Image
               src={item.image}
               alt={item.name}
               fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               className="object-cover"
               data-ai-hint={item.imageHint}
             />
@@ -79,7 +79,7 @@ export default function MenuItemCard({ item, variant = 'default' }: { item: Menu
       <Card className="flex flex-col h-full overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 rounded-lg">
         <CardHeader className="p-0">
           <Link href={`/producto/${item.id}`} className="block">
-            <div className="relative w-full h-48">
+            <div className="relative w-full aspect-[4/3]">
               <Image
                 src={item.image}
                 alt={item.name}

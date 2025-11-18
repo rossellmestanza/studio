@@ -5,6 +5,14 @@ import CartSheet from '@/components/CartSheet';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Menu } from 'lucide-react';
+
 
 export default function Header() {
   const pathname = usePathname();
@@ -36,6 +44,30 @@ export default function Header() {
           ))}
         </nav>
         <div className="flex items-center space-x-4">
+          <div className="md:hidden">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" className="rounded-full bg-transparent border-gray-600 hover:bg-gray-700">
+                  <Menu className="h-5 w-5 text-white" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-black text-white border-gray-700">
+                {navLinks.map((link) => (
+                  <DropdownMenuItem key={link.href} asChild>
+                    <Link
+                      href={link.href}
+                      className={cn(
+                        "py-2 px-4 text-lg",
+                        pathname === link.href ? "text-primary bg-gray-800" : ""
+                      )}
+                    >
+                      {link.label}
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
           <CartSheet />
         </div>
       </div>
