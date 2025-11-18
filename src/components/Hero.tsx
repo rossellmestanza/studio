@@ -11,13 +11,21 @@ import {
 import { Button } from './ui/button';
 import { Sparkles } from 'lucide-react';
 import Link from 'next/link';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const heroImages = [
-  PlaceHolderImages.find(img => img.id === 'hero-1'),
-  PlaceHolderImages.find(img => img.id === 'hero-2'),
-  PlaceHolderImages.find(img => img.id === 'ceviche'),
-].filter(Boolean) as any[];
+    {
+      "id": "hero-1",
+      "description": "Pollo a la leña",
+      "imageUrl": "https://cdn.cuponidad.pe/images/Deals/polloalalenalinceofertas.jpg",
+      "imageHint": "roasted chicken"
+    },
+    {
+      "id": "hero-2",
+      "description": "Aji de gallina en plato hondo",
+      "imageUrl": "https://i.ytimg.com/vi/KfIK9IQixg4/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLAAkLhHY0GcxJOGvuJ6GlGqslnXRA",
+      "imageHint": "aji gallina"
+    }
+];
 
 
 export default function Hero() {
