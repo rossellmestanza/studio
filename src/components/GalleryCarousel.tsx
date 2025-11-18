@@ -86,8 +86,8 @@ export default function GalleryCarousel() {
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 text-black bg-yellow-400 hover:bg-yellow-500 border-none" />
-        <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 text-black bg-yellow-400 hover:bg-yellow-500 border-none" />
+        <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 text-black bg-yellow-400 hover:bg-yellow-500 border-none hidden md:inline-flex" />
+        <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 text-black bg-yellow-400 hover:bg-yellow-500 border-none hidden md:inline-flex" />
       </Carousel>
     </section>
   )
