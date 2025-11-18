@@ -1,3 +1,46 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "ceviche",
+      "description": "Ceviche clásico peruano con pescado fresco, limón, cebolla y ají.",
+      "imageUrl": "https://images.unsplash.com/photo-1735498905712-3d9d9011a419?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8Y2V2aWNoZSUyMHBlcnV2aWFufGVufDB8fHx8MTc2MzQyODg1MXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "ceviche peruvian"
+    },
+    {
+      "id": "lomo-saltado",
+      "description": "Trozos de lomo de res salteados con cebolla, tomate y papas fritas.",
+      "imageUrl": "https://picsum.photos/seed/lomosaltado/600/400",
+      "imageHint": "lomo saltado"
+    },
+    {
+      "id": "aji-de-gallina",
+      "description": "Pechuga de gallina deshilachada en una cremosa salsa de ají amarillo.",
+      "imageUrl": "https://picsum.photos/seed/ajigallina/600/400",
+      "imageHint": "aji gallina"
+    },
+    {
+      "id": "causa",
+      "description": "Pastel de papa amarilla con relleno.",
+      "imageUrl": "https://images.unsplash.com/photo-1587038995856-1c717725e27d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8cGVydXZpYW4lMjBjYXVzYXxlbnwwfHx8fDE3NjM0Mjg4NTJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "peruvian causa"
+    },
+    {
+      "id": "chicha-morada",
+      "description": "Refrescante bebida a base de maíz morado, piña y especias.",
+      "imageUrl": "https://images.unsplash.com/photo-1542518392-13317b1ee2a2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxwdXJwbGUlMjBkcmlua3xlbnwwfHx8fDE3NjM0Mjg4NTF8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "purple drink"
+    },
+    {
+      "id": "pisco-sour",
+      "description": "El cóctel bandera de Perú, con pisco, jugo de limón y clara de huevo.",
+      "imageUrl": "https://images.unsplash.com/photo-1620065371451-4d8233e0f8de?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxjb2NrdGFpbCUyMGdsYXNzfGVufDB8fHx8MTc2MzQwMDgzOHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "cocktail glass"
+    },
+    {
+      "id": "suspiro-limena",
+      "description": "Postre tradicional de manjar blanco cubierto con merengue al oporto.",
+      "imageUrl": "https://images.unsplash.com/photo-1744988870952-3103b7c23649?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxkZXNzZXJ0JTIwZ2xhc3N8ZW58MHx8fHwxNzYzMzMwMDg1fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "dessert glass"
+    }
+  ]
 }
