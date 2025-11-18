@@ -24,7 +24,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Home, ShoppingBag, List, PlusCircle, MoreHorizontal, Trash2, Edit, ClipboardList, DollarSign, Store, Upload, Clock, Phone, MapPin } from 'lucide-react';
+import { Home, ShoppingBag, List, PlusCircle, MoreHorizontal, Trash2, Edit, ClipboardList, DollarSign, Store, Upload, Clock, Phone, MapPin, Menu as MenuIcon } from 'lucide-react';
 import { menuItems, categories } from '@/lib/menu-data';
 import type { MenuItem } from '@/lib/types';
 import {
@@ -44,6 +44,8 @@ import {
   ResponsiveContainer,
   CartesianGrid
 } from 'recharts';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import Link from 'next/link';
 
 
 // Mock data for orders
@@ -90,38 +92,59 @@ export default function AdminDashboard() {
     }
   };
 
+  const navItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: Home },
+    { id: 'orders', label: 'Pedidos', icon: ClipboardList },
+    { id: 'products', label: 'Productos', icon: ShoppingBag },
+    { id: 'categories', label: 'Categorías', icon: List },
+    { id: 'local', label: 'Mi Local', icon: Store },
+  ];
+
+  const NavLinks = ({ isSheet = false }: { isSheet?: boolean }) => (
+    <nav className={`flex flex-col gap-2 ${isSheet ? 'p-4' : 'p-4'}`}>
+      {navItems.map((item) => (
+        <Button
+          key={item.id}
+          variant={activeView === item.id ? 'secondary' : 'ghost'}
+          className="justify-start"
+          onClick={() => setActiveView(item.id)}
+        >
+          <item.icon className="mr-2 h-4 w-4" />
+          {item.label}
+        </Button>
+      ))}
+    </nav>
+  );
+
   return (
     <div className="flex min-h-screen w-full bg-muted/40">
       <aside className="hidden w-64 flex-col border-r bg-background sm:flex">
         <div className="border-b p-6">
            <h1 className="text-2xl font-bold" style={{fontFamily: "'Ms Madi', cursive"}}>Fly Admin</h1>
         </div>
-        <nav className="flex flex-col gap-2 p-4">
-          <Button variant={activeView === 'dashboard' ? 'secondary' : 'ghost'} className="justify-start" onClick={() => setActiveView('dashboard')}>
-            <Home className="mr-2 h-4 w-4" />
-            Dashboard
-          </Button>
-           <Button variant={activeView === 'orders' ? 'secondary' : 'ghost'} className="justify-start" onClick={() => setActiveView('orders')}>
-            <ClipboardList className="mr-2 h-4 w-4" />
-            Pedidos
-          </Button>
-          <Button variant={activeView === 'products' ? 'secondary' : 'ghost'} className="justify-start" onClick={() => setActiveView('products')}>
-            <ShoppingBag className="mr-2 h-4 w-4" />
-            Productos
-          </Button>
-          <Button variant={activeView === 'categories' ? 'secondary' : 'ghost'} className="justify-start" onClick={() => setActiveView('categories')}>
-            <List className="mr-2 h-4 w-4" />
-            Categorías
-          </Button>
-           <Button variant={activeView === 'local' ? 'secondary' : 'ghost'} className="justify-start" onClick={() => setActiveView('local')}>
-            <Store className="mr-2 h-4 w-4" />
-            Mi Local
-          </Button>
-        </nav>
+        <NavLinks />
       </aside>
       <div className="flex flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b bg-background px-6">
-           <h2 className="text-xl font-semibold capitalize">{activeView === 'local' ? "Mi Local" : activeView}</h2>
+        <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b bg-background px-6 sm:justify-end">
+            <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="icon" className="sm:hidden">
+                <MenuIcon className="h-5 w-5" />
+                <span className="sr-only">Toggle navigation menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="sm:hidden p-0">
+                 <div className="border-b p-6">
+                    <Link href="#" className="flex items-center gap-2 font-semibold">
+                       <h1 className="text-2xl font-bold" style={{fontFamily: "'Ms Madi', cursive"}}>Fly Admin</h1>
+                    </Link>
+                 </div>
+                 <NavLinks isSheet />
+            </SheetContent>
+          </Sheet>
+
+           <h2 className="text-xl font-semibold capitalize sm:hidden">{activeView === 'local' ? "Mi Local" : activeView}</h2>
+          
           {activeView === 'products' && (
             <Dialog open={isProductDialogOpen} onOpenChange={setIsProductDialogOpen}>
               <DialogTrigger asChild>
@@ -638,3 +661,5 @@ function LocationDialog({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) =>
     </DialogContent>
   );
 }
+
+    
