@@ -24,7 +24,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Home, ShoppingBag, List, PlusCircle, MoreHorizontal, Trash2, Edit, ClipboardList } from 'lucide-react';
+import { Home, ShoppingBag, List, PlusCircle, MoreHorizontal, Trash2, Edit, ClipboardList, DollarSign } from 'lucide-react';
 import { menuItems, categories } from '@/lib/menu-data';
 import type { MenuItem } from '@/lib/types';
 import {
@@ -34,6 +34,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Badge } from '@/components/ui/badge';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  CartesianGrid
+} from 'recharts';
+
 
 // Mock data for orders
 const orders = [
@@ -41,6 +52,15 @@ const orders = [
   { id: 'ORD002', customer: 'Maria Garcia', date: '2024-05-20', total: 45.00, status: 'Pendiente' },
   { id: 'ORD003', customer: 'Carlos Sanchez', date: '2024-05-19', total: 120.00, status: 'En preparación' },
   { id: 'ORD004', customer: 'Ana Lopez', date: '2024-05-19', total: 35.50, status: 'Entregado' },
+];
+
+const monthlyRevenue = [
+    { month: 'Enero', revenue: 1200 },
+    { month: 'Febrero', revenue: 1800 },
+    { month: 'Marzo', revenue: 1500 },
+    { month: 'Abril', revenue: 2100 },
+    { month: 'Mayo', revenue: orders.filter(o => o.status === 'Entregado').reduce((sum, o) => sum + o.total, 0) },
+    { month: 'Junio', revenue: 2300 },
 ];
 
 
@@ -109,37 +129,74 @@ export default function AdminDashboard() {
 }
 
 function DashboardOverview() {
-  return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-       <Card>
-        <CardHeader>
-          <CardTitle>Total Pedidos</CardTitle>
-          <CardDescription>Número total de pedidos recibidos.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-4xl font-bold">{orders.length}</p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>Total Productos</CardTitle>
-          <CardDescription>Número total de productos en el menú.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-4xl font-bold">{menuItems.length}</p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>Total Categorías</CardTitle>
-          <CardDescription>Número total de categorías de productos.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-4xl font-bold">{categories.length}</p>
-        </CardContent>
-      </Card>
-    </div>
-  );
+    const totalRevenue = orders.filter(o => o.status === 'Entregado').reduce((sum, o) => sum + o.total, 0);
+
+    return (
+        <div className="grid gap-6">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Ganancias del Mes</CardTitle>
+                        <DollarSign className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">S/ {totalRevenue.toFixed(2)}</div>
+                        <p className="text-xs text-muted-foreground">+20.1% desde el mes pasado</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                    <CardTitle>Total Pedidos</CardTitle>
+                    <CardDescription>Número total de pedidos recibidos.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                    <p className="text-4xl font-bold">{orders.length}</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                    <CardTitle>Total Productos</CardTitle>
+                    <CardDescription>Número total de productos en el menú.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                    <p className="text-4xl font-bold">{menuItems.length}</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                    <CardTitle>Total Categorías</CardTitle>
+                    <CardDescription>Número total de categorías de productos.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                    <p className="text-4xl font-bold">{categories.length}</p>
+                    </CardContent>
+                </Card>
+            </div>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Resumen de Ganancias</CardTitle>
+                    <CardDescription>Gráfico de ganancias de los últimos 6 meses.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={monthlyRevenue}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="month" />
+                            <YAxis prefix="S/ " />
+                            <Tooltip
+                                contentStyle={{
+                                    backgroundColor: 'hsl(var(--card))',
+                                    borderColor: 'hsl(var(--border))'
+                                }}
+                            />
+                            <Legend />
+                            <Bar dataKey="revenue" fill="hsl(var(--primary))" name="Ganancia" />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </CardContent>
+            </Card>
+        </div>
+    );
 }
 
 function OrderManagement() {
@@ -407,5 +464,7 @@ function CategoryDialog({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) =>
     </DialogContent>
   );
 }
+
+    
 
     
