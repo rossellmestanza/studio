@@ -1,6 +1,7 @@
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Hero from '@/components/Hero';
+import Favorites from '@/components/Favorites';
 
 export default function HomePage() {
   return (
@@ -8,6 +9,7 @@ export default function HomePage() {
       <Header />
       <main className="flex-grow">
         <Hero />
+        <Favorites />
       </main>
       <Footer />
     </div>

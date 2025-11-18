@@ -41,6 +41,30 @@
       "description": "Postre tradicional de manjar blanco cubierto con merengue al oporto.",
       "imageUrl": "https://images.unsplash.com/photo-1744988870952-3103b7c23649?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxkZXNzZXJ0JTIwZ2xhc3N8ZW58MHx8fHwxNzYzMzMwMDg1fDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "dessert glass"
+    },
+    {
+      "id": "pollo-brasa-entero",
+      "description": "Pollo entero a la brasa con papas fritas y ensalada.",
+      "imageUrl": "https://images.unsplash.com/photo-1599557421888-81d341de5a55?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageHint": "roasted chicken salad"
+    },
+    {
+      "id": "medio-pollo-brasa",
+      "description": "Medio pollo a la brasa con papas fritas.",
+      "imageUrl": "https://images.unsplash.com/photo-1626082912437-d51b3d74a7f7?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageHint": "half roasted chicken"
+    },
+    {
+      "id": "cuarto-pollo-brasa",
+      "description": "Un cuarto de pollo a la brasa con papas fritas.",
+      "imageUrl": "https://images.unsplash.com/photo-1626082894179-b4859a584518?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageHint": "quarter roasted chicken"
+    },
+    {
+      "id": "pollo-brasa-familiar",
+      "description": "Pollo a la brasa para toda la familia.",
+      "imageUrl": "https://images.unsplash.com/photo-1598515598144-b03598912328?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageHint": "family roasted chicken"
     }
   ]
 }
