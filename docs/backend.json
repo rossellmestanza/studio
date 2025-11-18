@@ -26,12 +26,21 @@
         "address": {
           "type": "string",
           "description": "Address of the user."
+        },
+        "role": {
+          "type": "string",
+          "description": "The role of the user.",
+          "enum": [
+            "user",
+            "admin"
+          ]
         }
       },
       "required": [
         "id",
         "email",
-        "name"
+        "name",
+        "role"
       ]
     }
   },

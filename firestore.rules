@@ -3,16 +3,17 @@
  *
  * Core Philosophy:
  * This ruleset enforces a strict user-ownership model for user profiles. Only the authenticated user
- * can read or write their own profile data.
+ * can read or write their own profile data. It also introduces a simple role-based access control.
  *
  * Data Structure:
  * All user data is stored under the `/users/{userId}` path, where `{userId}` corresponds to the
- * Firebase Auth UID of the user.
+ * Firebase Auth UID of the user. Each user document has a `role` field ('user' or 'admin').
  *
  * Key Security Decisions:
  * - User listing is explicitly disallowed.
- * - Only authenticated users can access their own data.
- * - Data consistency between the path and the document's `id` field is enforced.
+ * - Only authenticated users can access their own data. Admins can read any user data.
+ * - Data consistency between the path (`userId`) and the document's `id` field is enforced.
+ * - Users can only create their own profile with the 'user' role.
  *
  * Denormalization for Authorization:
  * The `id` field within the `/users/{userId}` document is used to ensure that the document's
@@ -31,43 +32,44 @@ service cloud.firestore {
     /**
      * @description Controls access to user profile data.
      * @path /users/{userId}
-     * @allow (create) - An authenticated user can create their profile if their UID matches the userId in the path and the document's id field.
-     * @allow (get, update, delete) - An authenticated user can access or modify their profile if their UID matches the userId in the path.
-     * @deny (create) - An unauthenticated user cannot create a user profile.
-     * @deny (get, update, delete) - An unauthenticated user cannot access or modify any user profile.
-     * @deny (create) - An authenticated user cannot create a profile under a different userId.
-     * @deny (update, delete) - An authenticated user cannot modify or delete a profile under a different userId.
-     * @principle Enforces document ownership for writes and reads.
+     * @allow (create) - An authenticated user can create their profile with the 'user' role.
+     * @allow (get) - An authenticated user can get their profile. An admin can get any profile.
+     * @allow (update) - An authenticated user can update their own profile.
+     * @allow (delete) - An authenticated user can delete their own profile.
+     * @deny (list) - Listing users is not allowed for anyone.
      */
     match /users/{userId} {
-      // Helper function to check if the user is signed in.
       function isSignedIn() {
         return request.auth != null;
       }
 
-      // Helper function to check if the authenticated user is the owner of the document.
       function isOwner(userId) {
         return isSignedIn() && request.auth.uid == userId;
       }
-
-      // Helper function to check if the authenticated user is the existing owner of the document.
+      
       function isExistingOwner(userId) {
           return isOwner(userId) && resource != null;
       }
 
-      // Allow authenticated users to create their own profile, validating the ID.
+      function isAdmin() {
+        return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      }
+
+      // Allow authenticated users to create their own profile with the 'user' role.
       allow create: if isOwner(userId)
-                   && request.resource.data.id == userId;
+                   && request.resource.data.id == userId
+                   && request.resource.data.role == 'user';
 
-      // Allow the owner to read their own profile data.
-      allow get: if isOwner(userId);
+      // Allow the owner or an admin to read profile data.
+      allow get: if isOwner(userId) || isAdmin();
 
-      // Allow the owner to list their own profile data.
+      // Disallow listing users for security.
       allow list: if false;
 
-      // Allow the owner to update their own profile data, ensuring the ID remains consistent.
+      // Allow the owner to update their own profile data, ensuring ID and role are not changed by them.
       allow update: if isExistingOwner(userId)
-                    && request.resource.data.id == resource.data.id;
+                    && request.resource.data.id == resource.data.id
+                    && request.resource.data.role == resource.data.role;
 
       // Allow the owner to delete their own profile data.
       allow delete: if isExistingOwner(userId);
