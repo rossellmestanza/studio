@@ -1,8 +1,10 @@
+
 "use client";
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import Link from 'next/link';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -28,12 +30,15 @@ export default function MenuItemCard({ item, variant = 'default' }: { item: Menu
     }, 300);
   };
   
-  const handleSimpleAddToCart = () => {
+  const handleSimpleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     addToCart(item, 1, '');
   };
 
   if (variant === 'compact') {
     return (
+      <Link href={`/producto/${item.id}`} className="h-full block">
        <Card className="flex flex-col h-full overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 rounded-lg bg-card">
         <CardHeader className="p-0">
           <div className="relative w-full h-48">
@@ -63,26 +68,31 @@ export default function MenuItemCard({ item, variant = 'default' }: { item: Menu
           </Button>
         </CardFooter>
       </Card>
+      </Link>
     );
   }
 
+  // The 'default' variant logic remains for potential future use, 
+  // but compact variant will now link to detail page.
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <Card className="flex flex-col h-full overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 rounded-lg">
         <CardHeader className="p-0">
-          <div className="relative w-full h-48">
-            <Image
-              src={item.image}
-              alt={item.name}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              className="object-cover"
-              data-ai-hint={item.imageHint}
-            />
-          </div>
-          <div className="p-4 pb-0">
-            <CardTitle className="text-xl font-bold">{item.name}</CardTitle>
-          </div>
+          <Link href={`/producto/${item.id}`} className="block">
+            <div className="relative w-full h-48">
+              <Image
+                src={item.image}
+                alt={item.name}
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                className="object-cover"
+                data-ai-hint={item.imageHint}
+              />
+            </div>
+            <div className="p-4 pb-0">
+              <CardTitle className="text-xl font-bold">{item.name}</CardTitle>
+            </div>
+          </Link>
         </CardHeader>
         <CardContent className="flex-grow p-4">
           <p className="text-sm text-muted-foreground">{item.description}</p>
