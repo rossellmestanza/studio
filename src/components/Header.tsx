@@ -52,13 +52,13 @@ export default function Header() {
                   <Menu className="h-5 w-5 text-white" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-black text-white border-gray-700">
+              <DropdownMenuContent align="end" className="bg-black text-white border-gray-700 w-screen">
                 {navLinks.map((link) => (
                   <DropdownMenuItem key={link.href} asChild>
                     <Link
                       href={link.href}
                       className={cn(
-                        "py-2 px-4 text-lg",
+                        "py-2 px-4 text-lg justify-center",
                         pathname === link.href ? "text-primary bg-gray-800" : ""
                       )}
                     >
