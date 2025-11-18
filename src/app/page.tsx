@@ -2,6 +2,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Favorites from '@/components/Favorites';
 import HomeMenuPreview from '@/components/HomeMenuPreview';
+import GalleryCarousel from '@/components/GalleryCarousel';
 
 export default function HomePage() {
   return (
@@ -10,6 +11,7 @@ export default function HomePage() {
       <main className="flex-grow">
         <Favorites />
         <HomeMenuPreview />
+        <GalleryCarousel />
       </main>
       <Footer />
     </div>
