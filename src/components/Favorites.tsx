@@ -15,7 +15,7 @@ export default function Favorites() {
   const favoriteItems = menuItems.filter(item => item.id.includes('pollo-brasa'));
 
   return (
-    <section className="w-full py-12 md:py-20 bg-amber-400">
+    <section className="w-full py-12 md:py-20" style={{ backgroundColor: '#f7b602' }}>
       <div className="container mx-auto">
         <div className="text-center mb-10">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900">LOS FAVORITOS DE CASA</h2>
