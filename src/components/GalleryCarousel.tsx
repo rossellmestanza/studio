@@ -41,10 +41,10 @@ export default function GalleryCarousel() {
                   alt={item.title}
                   fill
                   sizes="100vw"
-                  className="object-contain"
+                  className="object-cover"
                   data-ai-hint="delivery chicken"
                 />
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4 bg-black/30">
                   <h2 className="text-4xl md:text-6xl font-extrabold text-white" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>
                     {item.title}
                   </h2>
