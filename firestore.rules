@@ -1,0 +1,76 @@
+/**
+ * @fileoverview Firestore Security Rules for Fly Menú Digital.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model for user profiles. Only the authenticated user
+ * can read or write their own profile data.
+ *
+ * Data Structure:
+ * All user data is stored under the `/users/{userId}` path, where `{userId}` corresponds to the
+ * Firebase Auth UID of the user.
+ *
+ * Key Security Decisions:
+ * - User listing is explicitly disallowed.
+ * - Only authenticated users can access their own data.
+ * - Data consistency between the path and the document's `id` field is enforced.
+ *
+ * Denormalization for Authorization:
+ * The `id` field within the `/users/{userId}` document is used to ensure that the document's
+ * internal representation of the user ID matches the ID in the path. This allows for simple
+ * and efficient authorization checks without requiring additional `get()` calls.
+ *
+ * Structural Segregation:
+ * User data is segregated into the `/users/{userId}` collection to ensure a consistent security
+ * posture for all user profiles. This simplifies rule definition and reduces the risk of unintended
+ * data exposure.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Controls access to user profile data.
+     * @path /users/{userId}
+     * @allow (create) - An authenticated user can create their profile if their UID matches the userId in the path and the document's id field.
+     * @allow (get, update, delete) - An authenticated user can access or modify their profile if their UID matches the userId in the path.
+     * @deny (create) - An unauthenticated user cannot create a user profile.
+     * @deny (get, update, delete) - An unauthenticated user cannot access or modify any user profile.
+     * @deny (create) - An authenticated user cannot create a profile under a different userId.
+     * @deny (update, delete) - An authenticated user cannot modify or delete a profile under a different userId.
+     * @principle Enforces document ownership for writes and reads.
+     */
+    match /users/{userId} {
+      // Helper function to check if the user is signed in.
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      // Helper function to check if the authenticated user is the owner of the document.
+      function isOwner(userId) {
+        return isSignedIn() && request.auth.uid == userId;
+      }
+
+      // Helper function to check if the authenticated user is the existing owner of the document.
+      function isExistingOwner(userId) {
+          return isOwner(userId) && resource != null;
+      }
+
+      // Allow authenticated users to create their own profile, validating the ID.
+      allow create: if isOwner(userId)
+                   && request.resource.data.id == userId;
+
+      // Allow the owner to read their own profile data.
+      allow get: if isOwner(userId);
+
+      // Allow the owner to list their own profile data.
+      allow list: if false;
+
+      // Allow the owner to update their own profile data, ensuring the ID remains consistent.
+      allow update: if isExistingOwner(userId)
+                    && request.resource.data.id == resource.data.id;
+
+      // Allow the owner to delete their own profile data.
+      allow delete: if isExistingOwner(userId);
+    }
+  }
+}

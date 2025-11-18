@@ -1,0 +1,65 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the Fly Menú Digital application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user entity."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the user.",
+          "format": "email"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the user."
+        },
+        "phone": {
+          "type": "string",
+          "description": "Phone number of the user."
+        },
+        "address": {
+          "type": "string",
+          "description": "Address of the user."
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "name"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profile data. The 'userId' parameter corresponds to the Firebase Auth UID. Access is restricted to the authenticated user with the matching UID.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase Auth UID of the user."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "This structure is designed to support user authentication and basic user profile management in the Fly Menú Digital application. It prioritizes simplicity and security by focusing on path-based ownership for user data. This approach ensures Authorization Independence, as access control is directly tied to the user's ID in the path and doesn't require complex `get()` calls in security rules.\n\nThe structure uses Structural Segregation by placing user data in a dedicated `/users/{userId}` collection, guaranteeing that all documents within this collection share the same security posture (only the authenticated user can access their own data). This simplifies security rule definition and reduces the risk of unintended data exposure.\n\nThis design inherently supports the QAP principle that \"Rules are not Filters\" by enforcing strict ownership at the path level. Listing users is not supported, avoiding the need to filter based on user attributes. Future features requiring collaborative data or global roles can be implemented using Membership Maps or dedicated role collections, as described in the design principles."
+  }
+}
