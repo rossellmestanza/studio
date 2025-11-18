@@ -41,7 +41,7 @@ ${itemsText}
 ${totalText}
     `;
 
-    const whatsappNumber = "+51949992147";
+    const whatsappNumber = "+51973282798";
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
     
     window.open(whatsappUrl, '_blank');
@@ -134,4 +134,3 @@ ${totalText}
     </div>
   );
 }
-

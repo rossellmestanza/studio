@@ -64,7 +64,7 @@ const monthlyRevenue = [
 ];
 
 const locations = [
-  { id: 'san-isidro', name: 'Local San Isidro', address: 'Av. Javier Prado Este 456, San Isidro', phone: '+51 949 992 147' },
+  { id: 'san-isidro', name: 'Local San Isidro', address: 'Av. Javier Prado Este 456, San Isidro', phone: '+51 973 282 798' },
   { id: 'miraflores', name: 'Local Miraflores', address: 'Av. Larco 789, Miraflores', phone: '+51 949 992 148' },
   { id: 'surco', name: 'Local Surco', address: 'Av. Primavera 321, Surco', phone: '+51 949 992 149' },
 ];
@@ -538,7 +538,7 @@ function LocalManagement() {
               <Label htmlFor="footer-phone">Teléfono</Label>
                <div className="relative">
                 <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input id="footer-phone" className="pl-10" defaultValue="+51 949 992 147" />
+                <Input id="footer-phone" className="pl-10" defaultValue="+51 973 282 798" />
               </div>
             </div>
             <Button>Actualizar Contacto</Button>

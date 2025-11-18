@@ -28,7 +28,7 @@ export default function RootLayout({
           {children}
         </CartProvider>
         <Toaster />
-        <WhatsAppButton phoneNumber="+51949992147" />
+        <WhatsAppButton phoneNumber="+51973282798" />
       </body>
     </html>
   );

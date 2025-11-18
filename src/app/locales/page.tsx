@@ -9,7 +9,7 @@ const locations = [
   {
     name: 'Local San Isidro',
     address: 'Av. Javier Prado Este 456, San Isidro',
-    phone: '+51 949 992 147',
+    phone: '+51 973 282 798',
     hours: 'Lunes a Domingo: 11:00 AM - 11:00 PM',
     mapLink: 'https://maps.google.com/?q=Av.+Javier+Prado+Este+456,+San+Isidro',
   },
@@ -30,7 +30,7 @@ const locations = [
 ];
 
 export default function LocalesPage() {
-  const whatsappNumber = "+51949992147";
+  const whatsappNumber = "+51973282798";
   const whatsappLink = `https://wa.me/${whatsappNumber.replace(/\s/g, '')}`;
 
   return (
