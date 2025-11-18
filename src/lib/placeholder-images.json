@@ -9,13 +9,13 @@
     {
       "id": "lomo-saltado",
       "description": "Trozos de lomo de res salteados con cebolla, tomate y papas fritas.",
-      "imageUrl": "https://cdn.cuponidad.pe/images/Deals/polloalalenalinceofertas.jpg",
-      "imageHint": "roasted chicken"
+      "imageUrl": "https://images.unsplash.com/photo-1626202425256-02e7379d714d?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageHint": "lomo saltado"
     },
     {
       "id": "aji-de-gallina",
       "description": "Pechuga de gallina deshilachada en una cremosa salsa de ají amarillo.",
-      "imageUrl": "https://i.ytimg.com/vi/KfIK9IQixg4/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLAAkLhHY0GcxJOGvuJ6GlGqslnXRA",
+      "imageUrl": "https://images.unsplash.com/photo-1604243172027-e95250d4f3b5?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       "imageHint": "aji gallina"
     },
     {
@@ -65,6 +65,18 @@
       "description": "Pollo a la brasa para toda la familia.",
       "imageUrl": "https://images.unsplash.com/photo-1598515598144-b03598912328?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       "imageHint": "family roasted chicken"
+    },
+    {
+      "id": "hero-1",
+      "description": "Pollo a la leña",
+      "imageUrl": "https://cdn.cuponidad.pe/images/Deals/polloalalenalinceofertas.jpg",
+      "imageHint": "roasted chicken"
+    },
+    {
+      "id": "hero-2",
+      "description": "Aji de gallina en plato hondo",
+      "imageUrl": "https://i.ytimg.com/vi/KfIK9IQixg4/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLAAkLhHY0GcxJOGvuJ6GlGqslnXRA",
+      "imageHint": "aji gallina"
     }
   ]
 }

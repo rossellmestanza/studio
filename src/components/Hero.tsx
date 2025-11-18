@@ -14,8 +14,8 @@ import Link from 'next/link';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const heroImages = [
-  PlaceHolderImages.find(img => img.id === 'lomo-saltado'),
-  PlaceHolderImages.find(img => img.id === 'aji-de-gallina'),
+  PlaceHolderImages.find(img => img.id === 'hero-1'),
+  PlaceHolderImages.find(img => img.id === 'hero-2'),
   PlaceHolderImages.find(img => img.id === 'ceviche'),
 ].filter(Boolean) as any[];
 
