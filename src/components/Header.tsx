@@ -11,7 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Menu } from 'lucide-react';
+import { Menu, User } from 'lucide-react';
 
 
 export default function Header() {
@@ -21,6 +21,7 @@ export default function Header() {
     { href: '/', label: 'INICIO' },
     { href: '/carta', label: 'CARTA' },
     { href: '/locales', label: 'LOCALES' },
+    { href: '/micuenta', label: 'MI CUENTA' },
   ];
 
   return (
