@@ -12,7 +12,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
-import { User as FirebaseUser, FirebaseError } from 'firebase/auth';
+import { User as FirebaseUser } from 'firebase/auth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 
@@ -56,8 +56,8 @@ export default function AuthPage() {
           role: 'user',
         });
       }
-    } catch (err) {
-      if (err instanceof FirebaseError) {
+    } catch (err: any) {
+      if (err.code) {
         setError(getFriendlyErrorMessage(err.code));
       } else {
         setError(getFriendlyErrorMessage(''));
@@ -70,8 +70,8 @@ export default function AuthPage() {
     setError(null);
     try {
       await initiateEmailSignIn(auth, email, password);
-    } catch (err) {
-       if (err instanceof FirebaseError) {
+    } catch (err: any) {
+       if (err.code) {
         setError(getFriendlyErrorMessage(err.code));
       } else {
         setError(getFriendlyErrorMessage(''));
