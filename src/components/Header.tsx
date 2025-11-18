@@ -11,14 +11,21 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
-import { Menu, User } from 'lucide-react';
-import { useUser } from '@/firebase';
+import { Menu, User, LogOut } from 'lucide-react';
+import { useUser, useAuth } from '@/firebase';
+import { signOut } from 'firebase/auth';
 
 
 export default function Header() {
   const pathname = usePathname();
   const { user, isUserLoading } = useUser();
+  const auth = useAuth();
+
+  const handleSignOut = () => {
+    signOut(auth);
+  };
 
   const navLinks = [
     { href: '/', label: 'INICIO' },
@@ -45,17 +52,6 @@ export default function Header() {
               {link.label}
             </Link>
           ))}
-           {user && (
-             <Link
-              href="/micuenta"
-              className={cn(
-                "text-sm font-medium transition-colors hover:text-primary",
-                pathname === "/micuenta" ? "text-primary" : "text-white/80"
-              )}
-            >
-              MI CUENTA
-            </Link>
-           )}
         </nav>
         <div className="flex items-center space-x-4">
           <CartSheet />
@@ -63,6 +59,30 @@ export default function Header() {
             <Button asChild variant="outline" size="sm" className="hidden md:inline-flex bg-yellow-400 text-black border-none hover:bg-yellow-400">
               <Link href="/auth">Iniciar Sesión</Link>
             </Button>
+          )}
+           {!isUserLoading && user && (
+            <div className="hidden md:block">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" className="relative rounded-full bg-transparent border-gray-600 hover:bg-gray-700">
+                    <User className="h-5 w-5 text-white" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-black text-white border-gray-700">
+                  <DropdownMenuItem asChild>
+                    <Link href="/micuenta" className="cursor-pointer">
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Mi Cuenta</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-gray-700" />
+                  <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-red-400 focus:text-red-400 focus:bg-red-900/50">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Cerrar Sesión</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           )}
           <div className="md:hidden">
             <DropdownMenu>
@@ -98,7 +118,8 @@ export default function Header() {
                       </Link>
                     </DropdownMenuItem>
                   )}
-                  {!user && !isUserLoading && (
+                  <DropdownMenuSeparator className="bg-gray-700" />
+                  {!user && !isUserLoading ? (
                      <DropdownMenuItem asChild>
                        <Link
                         href="/auth"
@@ -106,6 +127,11 @@ export default function Header() {
                       >
                         INICIAR SESIÓN
                       </Link>
+                    </DropdownMenuItem>
+                  ) : !isUserLoading && (
+                     <DropdownMenuItem onClick={handleSignOut} className="py-3 px-4 text-lg justify-center text-red-400 focus:text-red-400 focus:bg-red-900/50 cursor-pointer">
+                        <LogOut className="mr-2 h-5 w-5" />
+                        CERRAR SESIÓN
                     </DropdownMenuItem>
                   )}
               </DropdownMenuContent>
