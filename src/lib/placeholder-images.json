@@ -3,19 +3,19 @@
     {
       "id": "ceviche",
       "description": "Ceviche clásico peruano con pescado fresco, limón, cebolla y ají.",
-      "imageUrl": "https://images.unsplash.com/photo-1735498905712-3d9d9011a419?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8Y2V2aWNoZSUyMHBlcnV2aWFufGVufDB8fHx8MTc2MzQyODg1MXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1633436375795-12b3b339712f?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       "imageHint": "ceviche peruvian"
     },
     {
       "id": "lomo-saltado",
       "description": "Trozos de lomo de res salteados con cebolla, tomate y papas fritas.",
-      "imageUrl": "https://picsum.photos/seed/lomosaltado/600/400",
-      "imageHint": "lomo saltado"
+      "imageUrl": "https://images.unsplash.com/photo-1606836599544-495b54659ac8?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageHint": "roasted chicken"
     },
     {
       "id": "aji-de-gallina",
       "description": "Pechuga de gallina deshilachada en una cremosa salsa de ají amarillo.",
-      "imageUrl": "https://picsum.photos/seed/ajigallina/600/400",
+      "imageUrl": "https://images.unsplash.com/photo-1628585352054-d27845cf3753?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       "imageHint": "aji gallina"
     },
     {
