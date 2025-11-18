@@ -2,6 +2,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Hero from '@/components/Hero';
 import Favorites from '@/components/Favorites';
+import HomeMenuPreview from '@/components/HomeMenuPreview';
 
 export default function HomePage() {
   return (
@@ -10,6 +11,7 @@ export default function HomePage() {
       <main className="flex-grow">
         <Hero />
         <Favorites />
+        <HomeMenuPreview />
       </main>
       <Footer />
     </div>
