@@ -12,16 +12,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Menu, User } from 'lucide-react';
+import { useUser } from '@/firebase';
 
 
 export default function Header() {
   const pathname = usePathname();
+  const { user, isUserLoading } = useUser();
 
   const navLinks = [
     { href: '/', label: 'INICIO' },
     { href: '/carta', label: 'CARTA' },
     { href: '/locales', label: 'LOCALES' },
-    { href: '/micuenta', label: 'MI CUENTA' },
   ];
 
   return (
@@ -43,9 +44,25 @@ export default function Header() {
               {link.label}
             </Link>
           ))}
+           {user && (
+             <Link
+              href="/micuenta"
+              className={cn(
+                "text-sm font-medium transition-colors hover:text-primary",
+                pathname === "/micuenta" ? "text-primary" : "text-white/80"
+              )}
+            >
+              MI CUENTA
+            </Link>
+           )}
         </nav>
         <div className="flex items-center space-x-4">
           <CartSheet />
+          {!isUserLoading && !user && (
+            <Button asChild variant="outline" size="sm" className="hidden md:inline-flex border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black">
+              <Link href="/auth">Iniciar Sesión</Link>
+            </Button>
+          )}
           <div className="md:hidden">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -67,6 +84,32 @@ export default function Header() {
                     </Link>
                   </DropdownMenuItem>
                 ))}
+                 {user && (
+                    <DropdownMenuItem asChild>
+                       <Link
+                        href="/micuenta"
+                        className={cn(
+                          "py-2 px-4 text-lg justify-center",
+                          pathname === "/micuenta" ? "text-primary bg-gray-800" : ""
+                        )}
+                      >
+                        MI CUENTA
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  {!user && !isUserLoading && (
+                     <DropdownMenuItem asChild>
+                       <Link
+                        href="/auth"
+                        className={cn(
+                          "py-2 px-4 text-lg justify-center text-yellow-400",
+                           pathname === "/auth" ? "bg-gray-800" : ""
+                        )}
+                      >
+                        INICIAR SESIÓN
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

@@ -10,6 +10,8 @@ import { CheckCircle, CookingPot, Truck, Package, Search } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useUser } from '@/firebase';
+import { useRouter } from 'next/navigation';
 
 // Mock data for user's orders
 const userOrders = [
@@ -73,6 +75,17 @@ function OrderTracker({ status }: { status: string }) {
 export default function MyAccountPage() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [foundOrder, setFoundOrder] = useState<typeof userOrders[0] | null | undefined>(undefined);
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
+
+  if (isUserLoading) {
+    return <div className="flex justify-center items-center min-h-screen">Cargando...</div>;
+  }
+
+  if (!user && !isUserLoading) {
+    router.push('/auth');
+    return null;
+  }
 
   const handleSearchOrder = (e: React.FormEvent) => {
     e.preventDefault();
@@ -172,4 +185,3 @@ export default function MyAccountPage() {
     </div>
   );
 }
-
