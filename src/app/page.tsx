@@ -3,7 +3,6 @@ import Footer from '@/components/Footer';
 import Hero from '@/components/Hero';
 import Favorites from '@/components/Favorites';
 import HomeMenuPreview from '@/components/HomeMenuPreview';
-import GalleryCarousel from '@/components/GalleryCarousel';
 
 export default function HomePage() {
   return (
@@ -13,7 +12,6 @@ export default function HomePage() {
         <Hero />
         <Favorites />
         <HomeMenuPreview />
-        <GalleryCarousel />
       </main>
       <Footer />
     </div>
