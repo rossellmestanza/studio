@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -29,23 +30,24 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Minus, Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function CartSheet() {
   const { cartItems, cartCount, cartTotal, removeFromCart, updateItemQuantity, clearCart } = useCart();
   const { toast } = useToast();
+  const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
 
   const handlePlaceOrder = () => {
+    setIsOpen(false); // Cierra el sheet
     // In a real app, this would trigger an API call
-    console.log("Order placed:", cartItems);
-    clearCart();
-    toast({
-      title: "¡Pedido Realizado!",
-      description: "Tu pedido ha sido enviado a la cocina. ¡Buen provecho!",
-    });
+    console.log("Redirecting to checkout:", cartItems);
+    router.push('/datos-cliente');
   };
 
   return (
-    <Sheet>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
         <Button variant="outline" size="icon" className="relative rounded-full bg-transparent border-gray-600 hover:bg-gray-700">
           <ShoppingCart className="h-5 w-5 text-white" />
@@ -118,7 +120,7 @@ export default function CartSheet() {
                 </div>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button className="w-full text-lg py-6 bg-[#841515] hover:bg-[#6a1010] text-white">Pedir Ahora</Button>
+                     <Button className="w-full text-lg py-6 bg-[#841515] hover:bg-[#6a1010] text-white">Pedir Ahora</Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
