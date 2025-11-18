@@ -47,8 +47,8 @@ export default function CartSheet() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline" size="icon" className="relative rounded-full">
-          <ShoppingCart className="h-5 w-5" />
+        <Button variant="outline" size="icon" className="relative rounded-full bg-transparent border-gray-600 hover:bg-gray-700">
+          <ShoppingCart className="h-5 w-5 text-white" />
           {cartCount > 0 && (
             <Badge variant="destructive" className="absolute -top-2 -right-2 h-6 w-6 rounded-full flex items-center justify-center p-0">
               {cartCount}

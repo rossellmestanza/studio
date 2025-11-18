@@ -10,7 +10,7 @@ export default function Footer() {
   }, []);
 
   return (
-    <footer className="text-center p-4 text-muted-foreground text-sm bg-background border-t">
+    <footer className="text-center p-4 text-gray-400 text-sm bg-gray-900 border-t border-gray-800">
       <p>Fly Menú Digital &copy; {year}</p>
     </footer>
   );
