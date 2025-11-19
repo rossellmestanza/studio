@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState } from 'react';
@@ -32,6 +33,10 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuPortal,
+  DropdownMenuSubContent
 } from "@/components/ui/dropdown-menu"
 import { Badge } from '@/components/ui/badge';
 import {
@@ -331,7 +336,16 @@ function OrderManagement() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem>Ver detalles</DropdownMenuItem>
-                      <DropdownMenuItem>Actualizar estado</DropdownMenuItem>
+                      <DropdownMenuSub>
+                        <DropdownMenuSubTrigger>Actualizar estado</DropdownMenuSubTrigger>
+                        <DropdownMenuPortal>
+                            <DropdownMenuSubContent>
+                                <DropdownMenuItem>Pendiente</DropdownMenuItem>
+                                <DropdownMenuItem>En preparación</DropdownMenuItem>
+                                <DropdownMenuItem>Entregado</DropdownMenuItem>
+                            </DropdownMenuSubContent>
+                        </DropdownMenuPortal>
+                      </DropdownMenuSub>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
@@ -815,5 +829,7 @@ function LocationDialog({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) =>
     </DialogContent>
   );
 }
+
+    
 
     
