@@ -403,61 +403,105 @@ function OrderManagement() {
 
 
 function ProductManagement({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) => void; }) {
-  // Mock function - in a real app this would delete from a DB
   const handleDelete = (id: string) => {
     alert(`(Simulado) Producto con ID: ${id} eliminado.`);
   };
 
+  const ActionMenu = ({ item }: { item: MenuItem }) => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="h-8 w-8 p-0">
+          <span className="sr-only">Abrir menú</span>
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => setDialogOpen(true)}>
+          <Edit className="mr-2 h-4 w-4" />
+          Editar
+        </DropdownMenuItem>
+        <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(item.id)}>
+          <Trash2 className="mr-2 h-4 w-4" />
+          Eliminar
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
   return (
-     <Card>
+    <Card>
       <CardHeader>
         <CardTitle>Productos</CardTitle>
         <CardDescription>Gestiona los productos de tu menú.</CardDescription>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nombre</TableHead>
-              <TableHead>Categoría</TableHead>
-              <TableHead>Precio</TableHead>
-              <TableHead className="text-right">Acciones</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {menuItems.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell className="font-medium">{item.name}</TableCell>
-                <TableCell>{item.category}</TableCell>
-                <TableCell>S/ {item.price.toFixed(2)}</TableCell>
-                <TableCell className="text-right">
-                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Abrir menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => setDialogOpen(true)}>
-                        <Edit className="mr-2 h-4 w-4" />
-                        Editar
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(item.id)}>
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Eliminar
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
+        {/* Vista de tabla para pantallas grandes */}
+        <div className="hidden md:block">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[100px]">Imagen</TableHead>
+                <TableHead>Nombre</TableHead>
+                <TableHead>Categoría</TableHead>
+                <TableHead>Precio</TableHead>
+                <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {menuItems.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell>
+                    <Image
+                      src={item.image}
+                      alt={item.name}
+                      width={64}
+                      height={64}
+                      className="rounded-md object-cover"
+                    />
+                  </TableCell>
+                  <TableCell className="font-medium">{item.name}</TableCell>
+                  <TableCell>{item.category}</TableCell>
+                  <TableCell>S/ {item.price.toFixed(2)}</TableCell>
+                  <TableCell className="text-right">
+                    <ActionMenu item={item} />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* Vista de tarjetas para pantallas pequeñas */}
+        <div className="grid gap-4 md:hidden">
+          {menuItems.map((item) => (
+            <Card key={item.id} className="p-4">
+              <div className="flex gap-4">
+                <Image
+                  src={item.image}
+                  alt={item.name}
+                  width={80}
+                  height={80}
+                  className="rounded-md object-cover"
+                />
+                <div className="flex-grow">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-bold">{item.name}</p>
+                      <p className="text-sm text-muted-foreground">{item.category}</p>
+                    </div>
+                    <ActionMenu item={item} />
+                  </div>
+                  <p className="font-semibold mt-2">S/ {item.price.toFixed(2)}</p>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
       </CardContent>
     </Card>
   );
 }
+
 
 function ProductDialog({ setDialogOpen, product }: { setDialogOpen: (isOpen: boolean) => void; product?: MenuItem }) {
   
