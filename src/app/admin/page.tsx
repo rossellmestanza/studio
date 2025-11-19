@@ -49,7 +49,7 @@ import {
   ResponsiveContainer,
   CartesianGrid
 } from 'recharts';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import Link from 'next/link';
 import { useAuth } from '@/firebase';
 import { signOut } from 'firebase/auth';
@@ -174,11 +174,13 @@ export default function AdminDashboard() {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="sm:hidden p-0">
-                 <div className="border-b p-6">
-                    <Link href="#" className="flex items-center gap-2 font-semibold">
-                       <h1 className="text-2xl font-bold" style={{fontFamily: "'Ms Madi', cursive"}}>Fly Admin</h1>
-                    </Link>
-                 </div>
+                 <SheetHeader className="border-b p-6">
+                    <SheetTitle>
+                        <Link href="#" className="flex items-center gap-2 font-semibold">
+                        <h1 className="text-2xl font-bold" style={{fontFamily: "'Ms Madi', cursive"}}>Fly Admin</h1>
+                        </Link>
+                    </SheetTitle>
+                 </SheetHeader>
                  <NavLinks isSheet />
             </SheetContent>
           </Sheet>
