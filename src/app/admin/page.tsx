@@ -55,6 +55,7 @@ import { useAuth } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { Separator } from '@/components/ui/separator';
 
 
 // Mock data for orders
@@ -299,6 +300,29 @@ function OrderManagement() {
     }
   };
 
+  const ActionMenu = () => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="h-8 w-8 p-0">
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem>Ver detalles</DropdownMenuItem>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>Actualizar estado</DropdownMenuSubTrigger>
+          <DropdownMenuPortal>
+            <DropdownMenuSubContent>
+              <DropdownMenuItem>Pendiente</DropdownMenuItem>
+              <DropdownMenuItem>En preparación</DropdownMenuItem>
+              <DropdownMenuItem>Entregado</DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuPortal>
+        </DropdownMenuSub>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
   return (
     <Card>
       <CardHeader>
@@ -306,53 +330,69 @@ function OrderManagement() {
         <CardDescription>Gestiona los pedidos de tus clientes.</CardDescription>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>ID Pedido</TableHead>
-              <TableHead>Cliente</TableHead>
-              <TableHead>Fecha</TableHead>
-              <TableHead>Total</TableHead>
-              <TableHead>Estado</TableHead>
-              <TableHead className="text-right">Acciones</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {orders.map((order) => (
-              <TableRow key={order.id}>
-                <TableCell className="font-medium">{order.id}</TableCell>
-                <TableCell>{order.customer}</TableCell>
-                <TableCell>{order.date}</TableCell>
-                <TableCell>S/ {order.total.toFixed(2)}</TableCell>
-                <TableCell>
-                  <Badge variant={getStatusVariant(order.status) as any}>{order.status}</Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem>Ver detalles</DropdownMenuItem>
-                      <DropdownMenuSub>
-                        <DropdownMenuSubTrigger>Actualizar estado</DropdownMenuSubTrigger>
-                        <DropdownMenuPortal>
-                            <DropdownMenuSubContent>
-                                <DropdownMenuItem>Pendiente</DropdownMenuItem>
-                                <DropdownMenuItem>En preparación</DropdownMenuItem>
-                                <DropdownMenuItem>Entregado</DropdownMenuItem>
-                            </DropdownMenuSubContent>
-                        </DropdownMenuPortal>
-                      </DropdownMenuSub>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
+        {/* Vista de tabla para pantallas medianas y grandes */}
+        <div className="hidden md:block">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID Pedido</TableHead>
+                <TableHead>Cliente</TableHead>
+                <TableHead>Fecha</TableHead>
+                <TableHead>Total</TableHead>
+                <TableHead>Estado</TableHead>
+                <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {orders.map((order) => (
+                <TableRow key={order.id}>
+                  <TableCell className="font-medium">{order.id}</TableCell>
+                  <TableCell>{order.customer}</TableCell>
+                  <TableCell>{order.date}</TableCell>
+                  <TableCell>S/ {order.total.toFixed(2)}</TableCell>
+                  <TableCell>
+                    <Badge variant={getStatusVariant(order.status) as any}>{order.status}</Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <ActionMenu />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* Vista de tarjetas para pantallas pequeñas */}
+        <div className="grid gap-4 md:hidden">
+          {orders.map((order) => (
+            <Card key={order.id} className="p-4">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="font-bold">{order.customer}</p>
+                  <p className="text-sm text-muted-foreground">{order.id}</p>
+                </div>
+                <ActionMenu />
+              </div>
+              <Separator className="my-3" />
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <p className="text-muted-foreground">Fecha</p>
+                  <p>{order.date}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-muted-foreground">Total</p>
+                  <p className="font-semibold">S/ {order.total.toFixed(2)}</p>
+                </div>
+              </div>
+               <div className="mt-3">
+                  <p className="text-sm text-muted-foreground">Estado</p>
+                  <Badge variant={getStatusVariant(order.status) as any} className="w-full justify-center">
+                    {order.status}
+                  </Badge>
+                </div>
+            </Card>
+          ))}
+        </div>
       </CardContent>
     </Card>
   );
@@ -829,6 +869,8 @@ function LocationDialog({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) =>
     </DialogContent>
   );
 }
+
+    
 
     
 
