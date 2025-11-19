@@ -3,7 +3,7 @@
 
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/CartContext';
 import { useRouter } from 'next/navigation';
@@ -15,11 +15,38 @@ export default function ConfirmarPedidoPage() {
   const router = useRouter();
 
   const handleConfirmOrder = () => {
-    const name = customerData?.name || 'No especificado';
-    const phone = customerData?.phone || 'No especificado';
-    const address = customerData?.address || 'No especificado';
-    const reference = customerData?.reference || 'No especificado';
-    
+    if (!customerData) return;
+
+    let deliveryData = '';
+    switch (customerData.orderType) {
+      case 'delivery':
+        deliveryData = `
+*Datos de Entrega:*
+*Nombre:* ${customerData.name}
+*Celular:* ${customerData.phone}
+*Dirección:* ${customerData.address}
+*Referencia:* ${customerData.reference}
+*Método de Pago:* ${customerData.paymentMethod}
+        `;
+        break;
+      case 'pickup':
+        deliveryData = `
+*Datos para Recoger:*
+*Tipo:* Para Llevar
+*Nombre:* ${customerData.name}
+*Celular:* ${customerData.phone}
+        `;
+        break;
+      case 'table':
+        deliveryData = `
+*Datos de Mesa:*
+*Tipo:* Consumo en Mesa
+*Nombre:* ${customerData.name}
+*N° de Mesa:* ${customerData.tableNumber}
+        `;
+        break;
+    }
+
     const itemsText = cartItems.map(item => 
       `${item.quantity} x ${item.name} - S/ ${(item.price * item.quantity).toFixed(2)}`
     ).join('\n');
@@ -29,11 +56,7 @@ export default function ConfirmarPedidoPage() {
     const message = `
 ¡Hola! Quiero hacer un pedido:
 *-------------------*
-*Datos de Entrega:*
-*Nombre:* ${name}
-*Celular:* ${phone}
-*Dirección:* ${address}
-*Referencia:* ${reference}
+${deliveryData.trim()}
 *-------------------*
 *Mi Pedido:*
 ${itemsText}
@@ -65,6 +88,39 @@ ${totalText}
     );
   }
 
+  const renderCustomerData = () => {
+    switch (customerData.orderType) {
+      case 'delivery':
+        return (
+          <>
+            <p><strong>Nombre:</strong> {customerData.name}</p>
+            <p><strong>Celular:</strong> {customerData.phone}</p>
+            <p><strong>Dirección:</strong> {customerData.address}</p>
+            <p><strong>Referencia:</strong> {customerData.reference}</p>
+            <p><strong>Método de Pago:</strong> {customerData.paymentMethod}</p>
+          </>
+        );
+      case 'pickup':
+        return (
+          <>
+            <p><strong>Tipo de Pedido:</strong> Para Llevar</p>
+            <p><strong>Nombre:</strong> {customerData.name}</p>
+            <p><strong>Celular:</strong> {customerData.phone}</p>
+          </>
+        );
+      case 'table':
+        return (
+          <>
+            <p><strong>Tipo de Pedido:</strong> Consumo en Mesa</p>
+            <p><strong>Nombre:</strong> {customerData.name}</p>
+            <p><strong>Número de Mesa:</strong> {customerData.tableNumber}</p>
+          </>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
@@ -77,13 +133,10 @@ ${totalText}
 
             <Card className="shadow-lg">
                 <CardHeader>
-                    <CardTitle>Datos de Entrega</CardTitle>
+                    <CardTitle>Resumen del Pedido</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm">
-                    <p><strong>Nombre:</strong> {customerData.name}</p>
-                    <p><strong>Celular:</strong> {customerData.phone}</p>
-                    <p><strong>Dirección:</strong> {customerData.address}</p>
-                    <p><strong>Referencia:</strong> {customerData.reference}</p>
+                    {renderCustomerData()}
                 </CardContent>
             </Card>
 
@@ -122,7 +175,7 @@ ${totalText}
 
             <div className="text-center space-y-2">
                  <Button onClick={handleConfirmOrder} className="w-full bg-[#841515] hover:bg-[#6a1010] text-white text-lg py-6">
-                    Confirmar Pedido
+                    Confirmar Pedido por WhatsApp
                 </Button>
                 <p className="text-xs text-muted-foreground">
                     Al confirmar, serás redirigido a WhatsApp con tu pedido completo

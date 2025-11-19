@@ -5,11 +5,14 @@ import React, { createContext, useContext, useState, ReactNode } from 'react';
 import type { CartItem, MenuItem } from '@/lib/types';
 import { useToast } from "@/hooks/use-toast";
 
-interface CustomerData {
+export interface CustomerData {
+  orderType: 'delivery' | 'pickup' | 'table';
   name: string;
   phone: string;
-  address: string;
-  reference: string;
+  address?: string;
+  reference?: string;
+  tableNumber?: string;
+  paymentMethod?: string;
 }
 
 interface CartContextType {
