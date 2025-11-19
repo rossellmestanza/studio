@@ -24,7 +24,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Home, ShoppingBag, List, PlusCircle, MoreHorizontal, Trash2, Edit, ClipboardList, DollarSign, Store, Upload, Clock, Phone, MapPin, Menu as MenuIcon, LogOut } from 'lucide-react';
+import { Home, ShoppingBag, List, PlusCircle, MoreHorizontal, Trash2, Edit, ClipboardList, DollarSign, Store, Upload, Clock, Phone, MapPin, Menu as MenuIcon, LogOut, Image as ImageIcon } from 'lucide-react';
 import { menuItems, categories } from '@/lib/menu-data';
 import type { MenuItem } from '@/lib/types';
 import {
@@ -49,6 +49,7 @@ import Link from 'next/link';
 import { useAuth } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 
 // Mock data for orders
@@ -74,10 +75,30 @@ const locations = [
   { id: 'surco', name: 'Local Surco', address: 'Av. Primavera 321, Surco', phone: '+51 949 992 149' },
 ];
 
+const heroItems = [
+  {
+    id: "hero-delivery",
+    title: "DELIVERY GRATIS",
+    description: "Todo el día en compras mayores a S/. 30",
+    buttonText: "¡ORDENA YA!",
+    imageUrl: "https://static.wixstatic.com/media/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png/v1/fill/w_568,h_320,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png",
+    href: "/carta",
+  },
+  {
+    id: "hero-pollo-brasa",
+    title: "EL FAVORITO DE TODOS",
+    description: "Nuestro jugoso Pollo a la Brasa con papas y ensalada.",
+    buttonText: "VER PROMOCIONES",
+    imageUrl: "https://cdn.cuponidad.pe/images/Deals/polloalalenalinceofertas.jpg",
+    href: "/carta",
+  },
+];
+
 
 export default function AdminDashboard() {
   const [activeView, setActiveView] = useState('dashboard');
   const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
+  const [isBannerDialogOpen, setIsBannerDialogOpen] = useState(false);
   const auth = useAuth();
   const router = useRouter();
 
@@ -94,6 +115,8 @@ export default function AdminDashboard() {
         return <CategoryManagement />;
       case 'orders':
         return <OrderManagement />;
+      case 'banners':
+        return <BannerManagement setDialogOpen={setIsBannerDialogOpen} />;
       case 'local':
         return <LocalManagement />;
       case 'dashboard':
@@ -107,6 +130,7 @@ export default function AdminDashboard() {
     { id: 'orders', label: 'Pedidos', icon: ClipboardList },
     { id: 'products', label: 'Productos', icon: ShoppingBag },
     { id: 'categories', label: 'Categorías', icon: List },
+    { id: 'banners', label: 'Banners', icon: ImageIcon },
     { id: 'local', label: 'Mi Local', icon: Store },
   ];
 
@@ -165,6 +189,17 @@ export default function AdminDashboard() {
                     </Button>
                   </DialogTrigger>
                   <ProductDialog setDialogOpen={setIsProductDialogOpen} />
+                </Dialog>
+              )}
+               {activeView === 'banners' && (
+                <Dialog open={isBannerDialogOpen} onOpenChange={setIsBannerDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" className="gap-1">
+                      <PlusCircle className="h-4 w-4" />
+                      Añadir Banner
+                    </Button>
+                  </DialogTrigger>
+                  <BannerDialog setDialogOpen={setIsBannerDialogOpen} />
                 </Dialog>
               )}
                <Button variant="outline" size="icon" onClick={handleSignOut} aria-label="Cerrar Sesión">
@@ -515,6 +550,110 @@ function CategoryDialog({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) =>
   );
 }
 
+function BannerManagement({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) => void; }) {
+  const handleDelete = (id: string) => {
+    alert(`(Simulado) Banner con ID: ${id} eliminado.`);
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Banners</CardTitle>
+        <CardDescription>Gestiona los banners de la página principal.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Imagen</TableHead>
+              <TableHead>Título</TableHead>
+              <TableHead>Descripción</TableHead>
+              <TableHead className="text-right">Acciones</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {heroItems.map((item) => (
+              <TableRow key={item.id}>
+                <TableCell>
+                  <Image
+                    src={item.imageUrl}
+                    alt={item.title}
+                    width={100}
+                    height={56}
+                    className="rounded-md object-cover"
+                  />
+                </TableCell>
+                <TableCell className="font-medium">{item.title}</TableCell>
+                <TableCell>{item.description}</TableCell>
+                <TableCell className="text-right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => setDialogOpen(true)}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        Editar
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(item.id)}>
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Eliminar
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  );
+}
+
+function BannerDialog({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) => void; }) {
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    alert('(Simulado) Banner guardado.');
+    setDialogOpen(false);
+  };
+  
+  return (
+     <DialogContent className="sm:max-w-[480px]">
+      <DialogHeader>
+        <DialogTitle>Añadir/Editar Banner</DialogTitle>
+      </DialogHeader>
+      <form onSubmit={handleSubmit} className="grid gap-4 py-4">
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="banner-title" className="text-right">Título</Label>
+          <Input id="banner-title" placeholder="Ej: DELIVERY GRATIS" className="col-span-3" />
+        </div>
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="banner-description" className="text-right">Descripción</Label>
+          <Textarea id="banner-description" placeholder="Ej: En compras mayores a S/. 30" className="col-span-3" />
+        </div>
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="banner-image" className="text-right">URL de Imagen</Label>
+          <Input id="banner-image" placeholder="https://ejemplo.com/imagen.png" className="col-span-3" />
+        </div>
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="banner-button-text" className="text-right">Texto del Botón</Label>
+          <Input id="banner-button-text" placeholder="Ej: ¡ORDENA YA!" className="col-span-3" />
+        </div>
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="banner-href" className="text-right">Enlace</Label>
+          <Input id="banner-href" placeholder="Ej: /carta" className="col-span-3" />
+        </div>
+        <DialogFooter>
+          <Button type="submit">Guardar</Button>
+        </DialogFooter>
+      </form>
+    </DialogContent>
+  );
+}
+
 function LocalManagement() {
   const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false);
 
@@ -676,7 +815,5 @@ function LocationDialog({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) =>
     </DialogContent>
   );
 }
-
-    
 
     
