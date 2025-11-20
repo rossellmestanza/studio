@@ -507,6 +507,8 @@ function ProductManagement({ setDialogOpen }: { setDialogOpen: (isOpen: boolean)
 
 function ProductDialog({ setDialogOpen, product }: { setDialogOpen: (isOpen: boolean) => void; product?: MenuItem }) {
   const [extras, setExtras] = useState<MenuItemExtra[]>(product?.extras || []);
+  const [imagePreview, setImagePreview] = useState<string | null>(product?.image || null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleAddExtra = () => {
     setExtras([...extras, { name: '', price: 0 }]);
@@ -526,6 +528,20 @@ function ProductDialog({ setDialogOpen, product }: { setDialogOpen: (isOpen: boo
     setExtras(newExtras);
   };
   
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setIsUploading(true);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+        setIsUploading(false);
+        // In a real app, you would start the upload to a storage service here
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     // In a real app, you would handle form submission to an API
@@ -564,9 +580,17 @@ function ProductDialog({ setDialogOpen, product }: { setDialogOpen: (isOpen: boo
           <Label htmlFor="price" className="text-right">Precio</Label>
           <Input id="price" type="number" defaultValue={product?.price} className="col-span-3" />
         </div>
-        <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="image" className="text-right">URL de Imagen</Label>
-          <Input id="image" defaultValue={product?.image} className="col-span-3" />
+        <div className="grid grid-cols-4 items-start gap-4">
+          <Label htmlFor="image" className="text-right pt-2">Imagen</Label>
+          <div className="col-span-3 space-y-2">
+            <Input id="image" type="file" accept="image/*" onChange={handleImageChange} className="col-span-3" />
+             {isUploading && <p className="text-sm text-muted-foreground">Cargando...</p>}
+             {imagePreview && !isUploading && (
+                <div className="relative w-32 h-32 mt-2 rounded-md overflow-hidden">
+                    <Image src={imagePreview} alt="Vista previa" layout="fill" objectFit="cover" />
+                </div>
+            )}
+          </div>
         </div>
 
         <Separator />
@@ -1021,5 +1045,7 @@ function LocationDialog({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) =>
     </DialogContent>
   );
 }
+
+    
 
     
