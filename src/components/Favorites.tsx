@@ -12,7 +12,7 @@ import { menuItems } from "@/lib/menu-data"
 import MenuItemCard from "./MenuItemCard"
 
 export default function Favorites() {
-  const favoriteItems = menuItems.filter(item => item.id.includes('pollo-brasa'));
+  const favoriteItems = menuItems.slice(0, 5);
 
   return (
     <section className="w-full py-12 md:py-20" style={{ backgroundColor: '#f7b602' }}>
