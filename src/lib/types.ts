@@ -1,5 +1,10 @@
 import type { LucideIcon } from 'lucide-react';
 
+export interface MenuItemExtra {
+  name: string;
+  price: number;
+}
+
 export interface MenuItem {
   id: string;
   name: string;
@@ -9,6 +14,7 @@ export interface MenuItem {
   image: string;
   imageHint: string;
   category: string;
+  extras?: MenuItemExtra[];
 }
 
 export interface MenuCategory {
@@ -20,4 +26,5 @@ export interface MenuCategory {
 export interface CartItem extends MenuItem {
   quantity: number;
   notes?: string;
+  selectedExtras?: MenuItemExtra[];
 }

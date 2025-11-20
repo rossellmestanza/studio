@@ -26,7 +26,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Home, ShoppingBag, List, PlusCircle, MoreHorizontal, Trash2, Edit, ClipboardList, DollarSign, Store, Upload, Clock, Phone, MapPin, Menu as MenuIcon, LogOut, Image as ImageIcon } from 'lucide-react';
 import { menuItems, categories } from '@/lib/menu-data';
-import type { MenuItem } from '@/lib/types';
+import type { MenuItem, MenuItemExtra } from '@/lib/types';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -443,6 +443,7 @@ function ProductManagement({ setDialogOpen }: { setDialogOpen: (isOpen: boolean)
                 <TableHead>Nombre</TableHead>
                 <TableHead>Categoría</TableHead>
                 <TableHead>Precio</TableHead>
+                <TableHead>Extras</TableHead>
                 <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
             </TableHeader>
@@ -461,6 +462,7 @@ function ProductManagement({ setDialogOpen }: { setDialogOpen: (isOpen: boolean)
                   <TableCell className="font-medium">{item.name}</TableCell>
                   <TableCell>{item.category}</TableCell>
                   <TableCell>S/ {item.price.toFixed(2)}</TableCell>
+                  <TableCell>{item.extras ? item.extras.length : 0}</TableCell>
                   <TableCell className="text-right">
                     <ActionMenu item={item} />
                   </TableCell>
@@ -491,6 +493,7 @@ function ProductManagement({ setDialogOpen }: { setDialogOpen: (isOpen: boolean)
                     <ActionMenu item={item} />
                   </div>
                   <p className="font-semibold mt-2">S/ {item.price.toFixed(2)}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Extras: {item.extras ? item.extras.length : 0}</p>
                 </div>
               </div>
             </Card>
@@ -503,6 +506,25 @@ function ProductManagement({ setDialogOpen }: { setDialogOpen: (isOpen: boolean)
 
 
 function ProductDialog({ setDialogOpen, product }: { setDialogOpen: (isOpen: boolean) => void; product?: MenuItem }) {
+  const [extras, setExtras] = useState<MenuItemExtra[]>(product?.extras || []);
+
+  const handleAddExtra = () => {
+    setExtras([...extras, { name: '', price: 0 }]);
+  };
+
+  const handleRemoveExtra = (index: number) => {
+    setExtras(extras.filter((_, i) => i !== index));
+  };
+
+  const handleExtraChange = (index: number, field: 'name' | 'price', value: string) => {
+    const newExtras = [...extras];
+    if (field === 'price') {
+      newExtras[index][field] = parseFloat(value) || 0;
+    } else {
+      newExtras[index][field] = value;
+    }
+    setExtras(newExtras);
+  };
   
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -512,11 +534,11 @@ function ProductDialog({ setDialogOpen, product }: { setDialogOpen: (isOpen: boo
   };
   
   return (
-    <DialogContent className="sm:max-w-[480px]">
+    <DialogContent className="sm:max-w-2xl">
       <DialogHeader>
         <DialogTitle>{product ? 'Editar' : 'Añadir'} Producto</DialogTitle>
       </DialogHeader>
-      <form onSubmit={handleSubmit} className="grid gap-4 py-4">
+      <form onSubmit={handleSubmit} className="grid gap-4 py-4 max-h-[80vh] overflow-y-auto pr-6">
         <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="name" className="text-right">Nombre</Label>
           <Input id="name" defaultValue={product?.name} className="col-span-3" />
@@ -546,6 +568,45 @@ function ProductDialog({ setDialogOpen, product }: { setDialogOpen: (isOpen: boo
           <Label htmlFor="image" className="text-right">URL de Imagen</Label>
           <Input id="image" defaultValue={product?.image} className="col-span-3" />
         </div>
+
+        <Separator />
+
+        <div>
+          <h3 className="text-lg font-medium mb-2 text-center">Extras / Variables</h3>
+          <div className="space-y-4">
+            {extras.map((extra, index) => (
+              <div key={index} className="grid grid-cols-10 items-center gap-2">
+                <Input
+                  placeholder="Nombre del extra"
+                  value={extra.name}
+                  onChange={(e) => handleExtraChange(index, 'name', e.target.value)}
+                  className="col-span-5"
+                />
+                <Input
+                  type="number"
+                  placeholder="Precio"
+                  value={extra.price}
+                  onChange={(e) => handleExtraChange(index, 'price', e.target.value)}
+                  className="col-span-3"
+                />
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  onClick={() => handleRemoveExtra(index)}
+                  className="col-span-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+          <Button type="button" variant="outline" size="sm" onClick={handleAddExtra} className="mt-4">
+            <PlusCircle className="mr-2 h-4 w-4" /> Añadir Extra
+          </Button>
+        </div>
+
+
         <DialogFooter>
           <Button type="submit">Guardar Cambios</Button>
         </DialogFooter>

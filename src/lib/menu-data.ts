@@ -16,6 +16,11 @@ export const menuItems: MenuItem[] = [
     category: 'principales',
     image: 'https://static.wixstatic.com/media/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png/v1/fill/w_568,h_320,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png',
     imageHint: 'lomo saltado',
+    extras: [
+      { name: 'Huevo Frito', price: 2.50 },
+      { name: 'Porción de Plátano', price: 5.00 },
+      { name: 'Extra Lomo', price: 10.00 }
+    ]
   },
   {
     id: 'aji-de-gallina',
@@ -53,6 +58,10 @@ export const menuItems: MenuItem[] = [
     category: 'principales',
     image: 'https://static.wixstatic.com/media/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png/v1/fill/w_568,h_320,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png',
     imageHint: 'roasted chicken salad',
+    extras: [
+        { name: 'Porción de arroz', price: 4.00 },
+        { name: 'Todas las cremas', price: 3.00 }
+    ]
   },
   {
     id: 'medio-pollo-brasa',
