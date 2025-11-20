@@ -668,6 +668,24 @@ function BannerManagement({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) 
     alert(`(Simulado) Banner con ID: ${id} eliminado.`);
   };
 
+  const ActionMenu = ({ item }: { item: typeof heroItems[0] }) => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="h-8 w-8 p-0">
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => setDialogOpen(true)}>
+          <Edit className="mr-2 h-4 w-4" /> Editar
+        </DropdownMenuItem>
+        <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(item.id)}>
+          <Trash2 className="mr-2 h-4 w-4" /> Eliminar
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
   return (
     <Card>
       <CardHeader>
@@ -675,56 +693,69 @@ function BannerManagement({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) 
         <CardDescription>Gestiona los banners de la página principal.</CardDescription>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Imagen</TableHead>
-              <TableHead>Título</TableHead>
-              <TableHead>Descripción</TableHead>
-              <TableHead className="text-right">Acciones</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {heroItems.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell>
-                  <Image
-                    src={item.imageUrl}
-                    alt={item.title}
-                    width={100}
-                    height={56}
-                    className="rounded-md object-cover"
-                  />
-                </TableCell>
-                <TableCell className="font-medium">{item.title}</TableCell>
-                <TableCell>{item.description}</TableCell>
-                <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => setDialogOpen(true)}>
-                        <Edit className="mr-2 h-4 w-4" />
-                        Editar
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(item.id)}>
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Eliminar
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
+        {/* Vista de tabla para pantallas grandes */}
+        <div className="hidden md:block">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Imagen</TableHead>
+                <TableHead>Título</TableHead>
+                <TableHead>Descripción</TableHead>
+                <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {heroItems.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell>
+                    <Image
+                      src={item.imageUrl}
+                      alt={item.title}
+                      width={100}
+                      height={56}
+                      className="rounded-md object-cover"
+                    />
+                  </TableCell>
+                  <TableCell className="font-medium">{item.title}</TableCell>
+                  <TableCell>{item.description}</TableCell>
+                  <TableCell className="text-right">
+                    <ActionMenu item={item} />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* Vista de tarjetas para pantallas pequeñas */}
+        <div className="grid gap-4 md:hidden">
+          {heroItems.map((item) => (
+            <Card key={item.id} className="overflow-hidden">
+              <div className="relative h-32 w-full">
+                <Image
+                  src={item.imageUrl}
+                  alt={item.title}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <div className="p-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-bold">{item.title}</h3>
+                    <p className="text-sm text-muted-foreground">{item.description}</p>
+                  </div>
+                  <ActionMenu item={item} />
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
       </CardContent>
     </Card>
   );
 }
+
 
 function BannerDialog({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) => void; }) {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
