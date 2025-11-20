@@ -75,9 +75,9 @@ const monthlyRevenue = [
 ];
 
 const locations = [
-  { id: 'san-isidro', name: 'Local San Isidro', address: 'Av. Javier Prado Este 456, San Isidro', phone: '+51 973 282 798' },
-  { id: 'miraflores', name: 'Local Miraflores', address: 'Av. Larco 789, Miraflores', phone: '+51 949 992 148' },
-  { id: 'surco', name: 'Local Surco', address: 'Av. Primavera 321, Surco', phone: '+51 949 992 149' },
+  { id: 'san-isidro', name: 'Local San Isidro', address: 'Av. Javier Prado Este 456, San Isidro', phone: '+51 973 282 798', mapUrl: 'https://maps.app.goo.gl/...' },
+  { id: 'miraflores', name: 'Local Miraflores', address: 'Av. Larco 789, Miraflores', phone: '+51 949 992 148', mapUrl: 'https://maps.app.goo.gl/...' },
+  { id: 'surco', name: 'Local Surco', address: 'Av. Primavera 321, Surco', phone: '+51 949 992 149', mapUrl: 'https://maps.app.goo.gl/...' },
 ];
 
 const heroItems = [
@@ -587,7 +587,7 @@ function ProductDialog({ setDialogOpen, product }: { setDialogOpen: (isOpen: boo
              {isUploading && <p className="text-sm text-muted-foreground">Cargando...</p>}
              {imagePreview && !isUploading && (
                 <div className="relative w-32 h-32 mt-2 rounded-md overflow-hidden">
-                    <Image src={imagePreview} alt="Vista previa" layout="fill" objectFit="cover" />
+                    <Image src={imagePreview} alt="Vista previa" fill objectFit="cover" />
                 </div>
             )}
           </div>
@@ -844,18 +844,34 @@ function BannerManagement({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) 
 
 
 function BannerDialog({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) => void; }) {
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     alert('(Simulado) Banner guardado.');
     setDialogOpen(false);
   };
+   
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setIsUploading(true);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+        setIsUploading(false);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
   
   return (
-     <DialogContent className="sm:max-w-[480px]">
+     <DialogContent className="sm:max-w-xl">
       <DialogHeader>
         <DialogTitle>Añadir/Editar Banner</DialogTitle>
       </DialogHeader>
-      <form onSubmit={handleSubmit} className="grid gap-4 py-4">
+      <form onSubmit={handleSubmit} className="grid gap-4 py-4 max-h-[80vh] overflow-y-auto pr-6">
         <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="banner-title" className="text-right">Título</Label>
           <Input id="banner-title" placeholder="Ej: DELIVERY GRATIS" className="col-span-3" />
@@ -864,9 +880,17 @@ function BannerDialog({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) => v
           <Label htmlFor="banner-description" className="text-right">Descripción</Label>
           <Textarea id="banner-description" placeholder="Ej: En compras mayores a S/. 30" className="col-span-3" />
         </div>
-        <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="banner-image" className="text-right">URL de Imagen</Label>
-          <Input id="banner-image" placeholder="https://ejemplo.com/imagen.png" className="col-span-3" />
+        <div className="grid grid-cols-4 items-start gap-4">
+          <Label htmlFor="image" className="text-right pt-2">Imagen</Label>
+          <div className="col-span-3 space-y-2">
+            <Input id="image" type="file" accept="image/*" onChange={handleImageChange} className="col-span-3" />
+             {isUploading && <p className="text-sm text-muted-foreground">Cargando...</p>}
+             {imagePreview && !isUploading && (
+                <div className="relative w-full aspect-video mt-2 rounded-md overflow-hidden">
+                    <Image src={imagePreview} alt="Vista previa del banner" fill objectFit="cover" />
+                </div>
+            )}
+          </div>
         </div>
         <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="banner-button-text" className="text-right">Texto del Botón</Label>
@@ -907,7 +931,7 @@ function LocalManagement() {
 
   const ActionMenu = ({ locId }: { locId: string }) => (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="h-8 w-8 p-0">
           <MoreHorizontal className="h-4 w-4" />
         </Button>
@@ -941,7 +965,7 @@ function LocalManagement() {
               <div className="flex items-center gap-4">
                 <div className="w-24 h-24 bg-muted rounded-md flex items-center justify-center relative overflow-hidden">
                     {logoPreview ? (
-                        <Image src={logoPreview} alt="Vista previa del logo" layout="fill" objectFit="cover" />
+                        <Image src={logoPreview} alt="Vista previa del logo" fill objectFit="cover" />
                     ) : (
                         <span className="text-2xl font-bold" style={{fontFamily: "'Ms Madi', cursive"}}>Fly</span>
                     )}
