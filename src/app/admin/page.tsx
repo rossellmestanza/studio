@@ -891,6 +891,24 @@ function LocalManagement() {
     alert(`(Simulado) Local con ID: ${id} eliminado.`);
   };
 
+  const ActionMenu = ({ locId }: { locId: string }) => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="h-8 w-8 p-0">
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => setIsLocationDialogOpen(true)}>
+          <Edit className="mr-2 h-4 w-4" /> Editar
+        </DropdownMenuItem>
+        <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(locId)}>
+          <Trash2 className="mr-2 h-4 w-4" /> Eliminar
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
   return (
     <div className="grid gap-6">
       <Card>
@@ -970,42 +988,47 @@ function LocalManagement() {
           </Dialog>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nombre</TableHead>
-                <TableHead>Dirección</TableHead>
-                <TableHead>Teléfono</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {locations.map((loc) => (
-                <TableRow key={loc.id}>
-                  <TableCell className="font-medium">{loc.name}</TableCell>
-                  <TableCell>{loc.address}</TableCell>
-                  <TableCell>{loc.phone}</TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => setIsLocationDialogOpen(true)}>
-                          <Edit className="mr-2 h-4 w-4" /> Editar
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(loc.id)}>
-                          <Trash2 className="mr-2 h-4 w-4" /> Eliminar
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
+          {/* Vista de tabla para pantallas grandes */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead>Dirección</TableHead>
+                  <TableHead>Teléfono</TableHead>
+                  <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {locations.map((loc) => (
+                  <TableRow key={loc.id}>
+                    <TableCell className="font-medium">{loc.name}</TableCell>
+                    <TableCell>{loc.address}</TableCell>
+                    <TableCell>{loc.phone}</TableCell>
+                    <TableCell className="text-right">
+                       <ActionMenu locId={loc.id} />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+          {/* Vista de tarjetas para pantallas pequeñas */}
+          <div className="grid gap-4 md:hidden">
+            {locations.map((loc) => (
+              <Card key={loc.id} className="p-4">
+                <div className="flex justify-between items-start">
+                    <div className="font-bold">{loc.name}</div>
+                    <ActionMenu locId={loc.id} />
+                </div>
+                 <Separator className="my-3" />
+                 <div className="space-y-2 text-sm text-muted-foreground">
+                    <p><span className="font-semibold text-foreground">Dirección:</span> {loc.address}</p>
+                    <p><span className="font-semibold text-foreground">Teléfono:</span> {loc.phone}</p>
+                 </div>
+              </Card>
+            ))}
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -1045,6 +1068,8 @@ function LocationDialog({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) =>
     </DialogContent>
   );
 }
+
+    
 
     
 
