@@ -7,7 +7,6 @@ import {
   SheetHeader,
   SheetTitle,
   SheetFooter,
-  SheetDescription,
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -15,23 +14,18 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/context/CartContext";
-import { ShoppingCart, Trash2, ShoppingBag } from "lucide-react";
+import { ShoppingCart, Trash2, ShoppingBag, Minus, Plus } from "lucide-react";
 import Image from "next/image";
-import { useToast } from "@/hooks/use-toast";
-import { Minus, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function CartSheet() {
-  const { cartItems, cartCount, cartTotal, removeFromCart, updateItemQuantity, clearCart } = useCart();
-  const { toast } = useToast();
+  const { cartItems, cartCount, cartTotal, removeFromCart, updateItemQuantity } = useCart();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
 
   const handlePlaceOrder = () => {
-    setIsOpen(false); // Cierra el sheet
-    // In a real app, this would trigger an API call
-    console.log("Redirecting to checkout:", cartItems);
+    setIsOpen(false);
     router.push('/datos-cliente');
   };
 
@@ -59,7 +53,7 @@ export default function CartSheet() {
             <ScrollArea className="flex-grow my-4">
               <div className="space-y-4 px-6">
                 {cartItems.map((item) => (
-                  <div key={`${item.id}-${item.notes}`} className="flex items-center space-x-4 p-3 rounded-lg bg-card shadow-sm">
+                  <div key={item.id} className="flex items-start space-x-4 p-3 rounded-lg bg-card shadow-sm">
                     <div className="relative h-20 w-20 rounded-md overflow-hidden flex-shrink-0">
                        <Image
                           src={item.image}
@@ -71,14 +65,19 @@ export default function CartSheet() {
                     </div>
                     <div className="flex-grow">
                       <p className="font-bold">{item.name}</p>
-                      <p className="text-sm text-primary font-bold">S/ {item.price.toFixed(2)}</p>
+                      {item.selectedExtras && item.selectedExtras.length > 0 && (
+                        <div className="text-xs text-muted-foreground mt-1">
+                          {item.selectedExtras.map(extra => `+ ${extra.name}`).join(', ')}
+                        </div>
+                      )}
+                      <p className="text-sm text-primary font-bold mt-1">S/ {item.price.toFixed(2)}</p>
                       {item.notes && <p className="text-xs text-muted-foreground italic mt-1">Notas: {item.notes}</p>}
                        <div className="flex items-center space-x-2 mt-2">
                         <Button
                           variant="outline"
                           size="icon"
                           className="h-7 w-7 bg-secondary"
-                          onClick={() => updateItemQuantity(item.id, item.notes, item.quantity - 1)}
+                          onClick={() => updateItemQuantity(item.id, item.quantity - 1)}
                         >
                           <Minus className="h-4 w-4" />
                         </Button>
@@ -86,14 +85,14 @@ export default function CartSheet() {
                         <Button
                           size="icon"
                           className="h-7 w-7 bg-secondary text-secondary-foreground"
-                          onClick={() => updateItemQuantity(item.id, item.notes, item.quantity + 1)}
+                          onClick={() => updateItemQuantity(item.id, item.quantity + 1)}
                         >
                           <Plus className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
                     <div className="flex flex-col items-end">
-                      <Button variant="ghost" size="icon" className="text-destructive h-8 w-8" onClick={() => removeFromCart(item.id, item.notes)}>
+                      <Button variant="ghost" size="icon" className="text-destructive h-8 w-8" onClick={() => removeFromCart(item.id)}>
                         <Trash2 className="h-5 w-5" />
                       </Button>
                     </div>

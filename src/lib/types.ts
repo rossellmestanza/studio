@@ -19,12 +19,11 @@ export interface MenuItem {
 
 export interface MenuCategory {
   id: string;
-  name: string;
-  icon: LucideIcon;
+  name:string;
 }
 
 export interface CartItem extends MenuItem {
   quantity: number;
   notes?: string;
-  selectedExtras?: MenuItemExtra[];
+  selectedExtras: MenuItemExtra[];
 }

@@ -1,26 +1,48 @@
 
 'use client';
 
+import { useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft, ShoppingCart } from 'lucide-react';
 
 import { menuItems } from '@/lib/menu-data';
-import type { MenuItem } from '@/lib/types';
+import type { MenuItem, MenuItemExtra } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/CartContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { addToCart } = useCart();
 
+  const [selectedExtras, setSelectedExtras] = useState<MenuItemExtra[]>([]);
+
   const item: MenuItem | undefined = menuItems.find(
     (menuItem) => menuItem.id === params.id
   );
+
+  const totalPrice = useMemo(() => {
+    if (!item) return 0;
+    const extrasPrice = selectedExtras.reduce((total, extra) => total + extra.price, 0);
+    return item.price + extrasPrice;
+  }, [item, selectedExtras]);
+
+  const handleExtraChange = (extra: MenuItemExtra, checked: boolean) => {
+    setSelectedExtras(prev => {
+      if (checked) {
+        return [...prev, extra];
+      } else {
+        return prev.filter(e => e.name !== extra.name);
+      }
+    });
+  };
 
   if (!item) {
     return (
@@ -41,7 +63,7 @@ export default function ProductDetailPage() {
   }
 
   const handleAddToCart = () => {
-    addToCart(item, 1, '');
+    addToCart(item, 1, '', selectedExtras);
   };
 
   return (
@@ -68,9 +90,34 @@ export default function ProductDetailPage() {
           <div className="flex flex-col justify-center">
             <h1 className="text-3xl md:text-4xl font-bold mb-4">{item.name.toUpperCase()}</h1>
             <p className="text-muted-foreground text-lg mb-6">{item.description}</p>
+            
+            {item.extras && item.extras.length > 0 && (
+              <div className="mb-8">
+                <h3 className="text-xl font-semibold mb-4">Añadir Extras:</h3>
+                <div className="space-y-3">
+                  {item.extras.map((extra) => (
+                    <div key={extra.name} className="flex items-center justify-between p-3 bg-secondary/50 rounded-md">
+                      <div className="flex items-center space-x-3">
+                        <Checkbox
+                          id={`extra-${extra.name}`}
+                          onCheckedChange={(checked) => handleExtraChange(extra, !!checked)}
+                        />
+                        <Label htmlFor={`extra-${extra.name}`} className="text-base cursor-pointer">
+                          {extra.name}
+                        </Label>
+                      </div>
+                      <span className="font-medium">+ S/ {extra.price.toFixed(2)}</span>
+                    </div>
+                  ))}
+                </div>
+                <Separator className="my-6" />
+              </div>
+            )}
+            
             <div className="flex items-baseline gap-4 mb-8">
-              <p className="text-3xl font-bold text-primary">S/ {item.price.toFixed(2)}</p>
-              {item.originalPrice && (
+              <span className="text-muted-foreground">Total:</span>
+              <p className="text-3xl font-bold text-primary">S/ {totalPrice.toFixed(2)}</p>
+              {item.originalPrice && !selectedExtras.length && (
                 <p className="text-xl text-muted-foreground line-through">
                   S/ {item.originalPrice.toFixed(2)}
                 </p>

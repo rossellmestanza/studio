@@ -2,7 +2,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import type { CartItem, MenuItem } from '@/lib/types';
+import type { CartItem, MenuItem, MenuItemExtra } from '@/lib/types';
 import { useToast } from "@/hooks/use-toast";
 
 export interface CustomerData {
@@ -17,9 +17,9 @@ export interface CustomerData {
 
 interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (item: MenuItem, quantity: number, notes: string) => void;
-  removeFromCart: (itemId: string, notes: string | undefined) => void;
-  updateItemQuantity: (itemId: string, notes: string | undefined, quantity: number) => void;
+  addToCart: (item: MenuItem, quantity: number, notes: string, selectedExtras: MenuItemExtra[]) => void;
+  removeFromCart: (cartItemId: string) => void;
+  updateItemQuantity: (cartItemId: string, quantity: number) => void;
   clearCart: () => void;
   cartTotal: number;
   cartCount: number;
@@ -29,41 +29,64 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+// Helper to generate a unique ID for a cart item based on its extras
+const generateCartItemId = (itemId: string, extras: MenuItemExtra[]) => {
+    if (!extras || extras.length === 0) {
+        return itemId;
+    }
+    const extraIds = extras.map(e => `${e.name.replace(/\s/g, '-')}:${e.price}`).sort().join('|');
+    return `${itemId}_${extraIds}`;
+};
+
+
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [customerData, setCustomerData] = useState<CustomerData | null>(null);
   const { toast } = useToast();
 
-  const addToCart = (item: MenuItem, quantity: number, notes: string) => {
+  const addToCart = (item: MenuItem, quantity: number, notes: string, selectedExtras: MenuItemExtra[]) => {
+    const cartItemId = generateCartItemId(item.id, selectedExtras);
+    const priceWithExtras = item.price + selectedExtras.reduce((acc, extra) => acc + extra.price, 0);
+
     setCartItems(prevItems => {
-      const existingItem = prevItems.find(cartItem => cartItem.id === item.id && cartItem.notes === notes);
+      const existingItem = prevItems.find(cartItem => cartItem.id === cartItemId);
       if (existingItem) {
         return prevItems.map(cartItem =>
-          cartItem.id === item.id && cartItem.notes === notes
-            ? { ...cartItem, quantity: cartItem.quantity + quantity }
+          cartItem.id === cartItemId
+            ? { ...cartItem, quantity: cartItem.quantity + quantity, notes: cartItem.notes || notes } // Append notes if item is the same
             : cartItem
         );
       } else {
-        return [...prevItems, { ...item, quantity, notes }];
+        const newItem: CartItem = {
+          ...item,
+          id: cartItemId, // The unique ID for this specific combination
+          originalId: item.id, // Keep track of the base product ID
+          price: priceWithExtras, // Price including selected extras
+          quantity,
+          notes,
+          selectedExtras,
+        };
+        return [...prevItems, newItem];
       }
     });
+
     toast({
       title: "¡Agregado!",
       description: `${item.name} se agregó a tu carrito.`,
     })
   };
 
-  const removeFromCart = (itemId: string, notes: string | undefined) => {
-    setCartItems(prevItems => prevItems.filter(item => !(item.id === itemId && item.notes === notes)));
+  const removeFromCart = (cartItemId: string) => {
+    setCartItems(prevItems => prevItems.filter(item => item.id !== cartItemId));
   };
 
-  const updateItemQuantity = (itemId: string, notes: string | undefined, quantity: number) => {
+  const updateItemQuantity = (cartItemId: string, quantity: number) => {
     if (quantity <= 0) {
-      removeFromCart(itemId, notes);
+      removeFromCart(cartItemId);
     } else {
       setCartItems(prevItems =>
         prevItems.map(item =>
-          (item.id === itemId && item.notes === notes) ? { ...item, quantity } : item
+          item.id === cartItemId ? { ...item, quantity } : item
         )
       );
     }
