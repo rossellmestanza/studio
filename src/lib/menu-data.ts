@@ -1,3 +1,4 @@
+
 import type { MenuItem, MenuCategory } from '@/lib/types';
 import { Soup, Beef, GlassWater, Cake, Fish } from 'lucide-react';
 
@@ -17,6 +18,8 @@ export const menuItems: MenuItem[] = [
     image: 'https://static.wixstatic.com/media/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png/v1/fill/w_568,h_320,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png',
     imageHint: 'lomo saltado',
     extras: [
+      { name: 'Término Medio', price: 0 },
+      { name: 'Bien Cocido', price: 0 },
       { name: 'Huevo Frito', price: 2.50 },
       { name: 'Porción de Plátano', price: 5.00 },
       { name: 'Extra Lomo', price: 10.00 }

@@ -106,7 +106,9 @@ export default function ProductDetailPage() {
                           {extra.name}
                         </Label>
                       </div>
-                      <span className="font-medium">+ S/ {extra.price.toFixed(2)}</span>
+                      {extra.price > 0 && (
+                        <span className="font-medium">+ S/ {extra.price.toFixed(2)}</span>
+                      )}
                     </div>
                   ))}
                 </div>
