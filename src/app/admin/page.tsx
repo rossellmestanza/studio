@@ -605,7 +605,6 @@ function CategoryManagement() {
             <TableHeader>
               <TableRow>
                 <TableHead>Nombre</TableHead>
-                <TableHead>ID</TableHead>
                 <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
             </TableHeader>
@@ -613,7 +612,6 @@ function CategoryManagement() {
               {categories.map((cat) => (
                 <TableRow key={cat.id}>
                   <TableCell className="font-medium">{cat.name}</TableCell>
-                  <TableCell>{cat.id}</TableCell>
                   <TableCell className="text-right">
                     <ActionMenu catId={cat.id} />
                   </TableCell>
@@ -628,10 +626,7 @@ function CategoryManagement() {
             {categories.map((cat) => (
                 <Card key={cat.id} className="p-4">
                     <div className="flex justify-between items-center">
-                        <div>
-                            <p className="font-bold">{cat.name}</p>
-                            <p className="text-sm text-muted-foreground">{cat.id}</p>
-                        </div>
+                        <p className="font-bold">{cat.name}</p>
                          <ActionMenu catId={cat.id} />
                     </div>
                 </Card>
@@ -659,10 +654,6 @@ function CategoryDialog({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) =>
         <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="name" className="text-right">Nombre</Label>
           <Input id="name" placeholder="Ej: Bebidas" className="col-span-3" />
-        </div>
-        <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="id" className="text-right">ID</Label>
-          <Input id="id" placeholder="Ej: bebidas" className="col-span-3" />
         </div>
         <DialogFooter>
           <Button type="submit">Guardar</Button>
