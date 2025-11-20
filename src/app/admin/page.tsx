@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -202,7 +203,7 @@ export default function AdminDashboard() {
                   <DialogTrigger asChild>
                     <Button size="sm" className="gap-1">
                       <PlusCircle className="h-4 w-4" />
-                      Añadir Banner
+                      Añadir
                     </Button>
                   </DialogTrigger>
                   <BannerDialog setDialogOpen={setIsBannerDialogOpen} />
@@ -959,3 +960,5 @@ function LocationDialog({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) =>
     </DialogContent>
   );
 }
+
+    
