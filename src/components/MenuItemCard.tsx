@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -13,10 +13,12 @@ import { useCart } from '@/context/CartContext';
 import type { MenuItem } from '@/lib/types';
 import { Minus, Plus, ShoppingCart } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
+import { useRouter } from 'next/navigation';
 
 export default function MenuItemCard({ item, variant = 'default' }: { item: MenuItem, variant?: 'default' | 'compact' }) {
   const { addToCart } = useCart();
   const { toast } = useToast();
+  const router = useRouter();
   const [quantity, setQuantity] = useState(1);
   const [notes, setNotes] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -30,10 +32,15 @@ export default function MenuItemCard({ item, variant = 'default' }: { item: Menu
     }, 300);
   };
   
-  const handleSimpleAddToCart = (e: React.MouseEvent) => {
+  const handleCartClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart(item, 1, '', []);
+
+    if (item.extras && item.extras.length > 0) {
+      router.push(`/producto/${item.id}`);
+    } else {
+      addToCart(item, 1, '', []);
+    }
   };
 
   if (variant === 'compact') {
@@ -63,7 +70,7 @@ export default function MenuItemCard({ item, variant = 'default' }: { item: Menu
               <p className="text-sm text-muted-foreground line-through">S/ {item.originalPrice.toFixed(2)}</p>
             )}
           </div>
-          <Button size="icon" className="rounded-full bg-[#851515] hover:bg-[#6a1010] text-destructive-foreground h-9 w-9" onClick={handleSimpleAddToCart}>
+          <Button size="icon" className="rounded-full bg-[#851515] hover:bg-[#6a1010] text-destructive-foreground h-9 w-9" onClick={handleCartClick}>
             <ShoppingCart className="h-4 w-4" />
           </Button>
         </CardFooter>
