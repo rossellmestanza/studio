@@ -24,7 +24,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Home, ShoppingBag, List, PlusCircle, MoreHorizontal, Trash2, Edit, ClipboardList, DollarSign, Store, Upload, Clock, Phone, MapPin, Menu as MenuIcon, LogOut, Image as ImageIcon } from 'lucide-react';
+import { Home, ShoppingBag, List, PlusCircle, MoreHorizontal, Trash2, Edit, ClipboardList, DollarSign, Store, Upload, Clock, Phone, MapPin, Menu as MenuIcon, LogOut, Image as ImageIcon, MessageCircle } from 'lucide-react';
 import { menuItems, categories } from '@/lib/menu-data';
 import type { MenuItem, MenuItemExtra } from '@/lib/types';
 import {
@@ -1016,6 +1016,13 @@ function LocalManagement() {
                 <Input id="footer-phone" className="pl-10" defaultValue="+51 973 282 798" />
               </div>
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="footer-whatsapp">WhatsApp para Pedidos</Label>
+               <div className="relative">
+                <MessageCircle className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input id="footer-whatsapp" className="pl-10" defaultValue="+51 973 282 798" />
+              </div>
+            </div>
             <Button>Actualizar Contacto</Button>
           </form>
         </CardContent>
@@ -1122,6 +1129,8 @@ function LocationDialog({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) =>
     </DialogContent>
   );
 }
+
+    
 
     
 
