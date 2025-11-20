@@ -1061,6 +1061,10 @@ function LocationDialog({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) =>
           <Label htmlFor="location-phone" className="text-right">Teléfono</Label>
           <Input id="location-phone" placeholder="Ej: +51 987654321" className="col-span-3" />
         </div>
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="location-map-url" className="text-right">URL de Ubicación (Mapa)</Label>
+          <Input id="location-map-url" placeholder="https://maps.app.goo.gl/..." className="col-span-3" />
+        </div>
         <DialogFooter>
           <Button type="submit">Guardar</Button>
         </DialogFooter>
@@ -1068,9 +1072,5 @@ function LocationDialog({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) =>
     </DialogContent>
   );
 }
-
-    
-
-    
 
     
