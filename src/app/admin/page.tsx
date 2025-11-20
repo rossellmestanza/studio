@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useState } from 'react';
@@ -563,6 +561,26 @@ function CategoryManagement() {
     alert(`(Simulado) Categoría con ID: ${id} eliminada.`);
   };
 
+  const ActionMenu = ({ catId }: { catId: string }) => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="h-8 w-8 p-0">
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => setIsCategoryDialogOpen(true)}>
+          <Edit className="mr-2 h-4 w-4" />
+          Editar
+        </DropdownMenuItem>
+        <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(catId)}>
+          <Trash2 className="mr-2 h-4 w-4" />
+          Eliminar
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -581,42 +599,45 @@ function CategoryManagement() {
         </Dialog>
       </CardHeader>
       <CardContent>
-         <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nombre</TableHead>
-              <TableHead>ID</TableHead>
-              <TableHead className="text-right">Acciones</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {categories.map((cat) => (
-              <TableRow key={cat.id}>
-                <TableCell className="font-medium">{cat.name}</TableCell>
-                <TableCell>{cat.id}</TableCell>
-                <TableCell className="text-right">
-                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => setIsCategoryDialogOpen(true)}>
-                        <Edit className="mr-2 h-4 w-4" />
-                        Editar
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(cat.id)}>
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Eliminar
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
+        {/* Vista de tabla para pantallas grandes */}
+        <div className="hidden md:block">
+           <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nombre</TableHead>
+                <TableHead>ID</TableHead>
+                <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
+            </TableHeader>
+            <TableBody>
+              {categories.map((cat) => (
+                <TableRow key={cat.id}>
+                  <TableCell className="font-medium">{cat.name}</TableCell>
+                  <TableCell>{cat.id}</TableCell>
+                  <TableCell className="text-right">
+                    <ActionMenu catId={cat.id} />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+        
+        {/* Vista de tarjetas para pantallas pequeñas */}
+        <div className="grid gap-4 md:hidden">
+            {categories.map((cat) => (
+                <Card key={cat.id} className="p-4">
+                    <div className="flex justify-between items-center">
+                        <div>
+                            <p className="font-bold">{cat.name}</p>
+                            <p className="text-sm text-muted-foreground">{cat.id}</p>
+                        </div>
+                         <ActionMenu catId={cat.id} />
+                    </div>
+                </Card>
             ))}
-          </TableBody>
-        </Table>
+        </div>
+
       </CardContent>
     </Card>
   );
