@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState } from 'react';
@@ -886,9 +887,23 @@ function BannerDialog({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) => v
 
 function LocalManagement() {
   const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const logoInputRef = React.useRef<HTMLInputElement>(null);
+
 
   const handleDelete = (id: string) => {
     alert(`(Simulado) Local con ID: ${id} eliminado.`);
+  };
+
+  const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const ActionMenu = ({ locId }: { locId: string }) => (
@@ -923,12 +938,24 @@ function LocalManagement() {
               <Input id="business-name" defaultValue="Fly" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="logo">Logo</Label>
+              <Label htmlFor="logo-upload">Logo</Label>
               <div className="flex items-center gap-4">
-                <div className="w-24 h-24 bg-muted rounded-md flex items-center justify-center">
-                  <span className="text-2xl font-bold" style={{fontFamily: "'Ms Madi', cursive"}}>Fly</span>
+                <div className="w-24 h-24 bg-muted rounded-md flex items-center justify-center relative overflow-hidden">
+                    {logoPreview ? (
+                        <Image src={logoPreview} alt="Vista previa del logo" layout="fill" objectFit="cover" />
+                    ) : (
+                        <span className="text-2xl font-bold" style={{fontFamily: "'Ms Madi', cursive"}}>Fly</span>
+                    )}
                 </div>
-                <Button variant="outline" type="button">
+                <Input
+                  id="logo-upload"
+                  type="file"
+                  accept="image/*"
+                  ref={logoInputRef}
+                  onChange={handleLogoChange}
+                  className="hidden"
+                />
+                <Button variant="outline" type="button" onClick={() => logoInputRef.current?.click()}>
                   <Upload className="mr-2 h-4 w-4" /> Cambiar Logo
                 </Button>
               </div>
