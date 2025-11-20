@@ -22,7 +22,7 @@ export default function MenuItemCard({ item, variant = 'default' }: { item: Menu
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const handleAddToCart = () => {
-    addToCart(item, quantity, notes);
+    addToCart(item, quantity, notes, []);
     setIsDialogOpen(false);
     setTimeout(() => {
       setQuantity(1);
@@ -33,7 +33,7 @@ export default function MenuItemCard({ item, variant = 'default' }: { item: Menu
   const handleSimpleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart(item, 1, '');
+    addToCart(item, 1, '', []);
   };
 
   if (variant === 'compact') {

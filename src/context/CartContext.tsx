@@ -17,7 +17,7 @@ export interface CustomerData {
 
 interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (item: MenuItem, quantity: number, notes: string, selectedExtras: MenuItemExtra[]) => void;
+  addToCart: (item: MenuItem, quantity: number, notes: string, selectedExtras?: MenuItemExtra[]) => void;
   removeFromCart: (cartItemId: string) => void;
   updateItemQuantity: (cartItemId: string, quantity: number) => void;
   clearCart: () => void;
@@ -44,7 +44,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [customerData, setCustomerData] = useState<CustomerData | null>(null);
   const { toast } = useToast();
 
-  const addToCart = (item: MenuItem, quantity: number, notes: string, selectedExtras: MenuItemExtra[]) => {
+  const addToCart = (item: MenuItem, quantity: number, notes: string, selectedExtras: MenuItemExtra[] = []) => {
     const cartItemId = generateCartItemId(item.id, selectedExtras);
     const priceWithExtras = item.price + selectedExtras.reduce((acc, extra) => acc + extra.price, 0);
 
