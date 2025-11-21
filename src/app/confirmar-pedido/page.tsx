@@ -9,9 +9,21 @@ import { useCart } from '@/context/CartContext';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Separator } from '@/components/ui/separator';
-import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
-import type { BusinessInfo } from '@/lib/types';
-import { doc } from 'firebase/firestore';
+import { useDoc, useFirestore, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
+import type { BusinessInfo, Order, MenuItem } from '@/lib/types';
+import { doc, collection } from 'firebase/firestore';
+
+// Helper function to create a simplified version of cart items for the order
+const getOrderItems = (cartItems: (MenuItem & { quantity: number })[]) => {
+  return cartItems.map(item => ({
+    name: item.name,
+    quantity: item.quantity,
+    price: item.price,
+    ...(item.selectedExtras && item.selectedExtras.length > 0 && { 
+        extras: item.selectedExtras.map(e => e.name).join(', ') 
+    })
+  }));
+};
 
 export default function ConfirmarPedidoPage() {
   const { cartItems, cartTotal, customerData, clearCart } = useCart();
@@ -22,11 +34,30 @@ export default function ConfirmarPedidoPage() {
   const { data: businessInfo } = useDoc<BusinessInfo>(businessInfoDoc);
 
   const handleConfirmOrder = () => {
-    if (!customerData || !businessInfo?.footerWhatsapp) {
-        alert('No se ha configurado un número de WhatsApp para pedidos.');
+    if (!customerData || !businessInfo?.footerWhatsapp || !firestore) {
+        alert('Faltan datos de configuración o del cliente. No se puede procesar el pedido.');
         return;
     }
 
+    // 1. Save order to Firestore
+    const ordersCollection = collection(firestore, 'orders');
+    const newOrder: Omit<Order, 'id'> = {
+      customer: customerData.name,
+      phone: customerData.phone,
+      address: customerData.address || '',
+      reference: customerData.reference || '',
+      orderType: customerData.orderType,
+      tableNumber: customerData.tableNumber || '',
+      paymentMethod: customerData.paymentMethod || '',
+      date: new Date().toLocaleDateString('es-PE'),
+      timestamp: new Date(),
+      total: cartTotal,
+      status: 'Pendiente',
+      items: getOrderItems(cartItems),
+    };
+    addDocumentNonBlocking(ordersCollection, newOrder);
+
+    // 2. Prepare WhatsApp message
     let deliveryData = '';
     switch (customerData.orderType) {
       case 'delivery':
@@ -82,6 +113,7 @@ ${totalText}
     const whatsappNumber = businessInfo.footerWhatsapp.replace(/\D/g, '');
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
     
+    // 3. Open WhatsApp and redirect
     window.open(whatsappUrl, '_blank');
     
     // We can't be sure the user sent the message, but for this app's flow we assume they did.
@@ -196,7 +228,7 @@ ${totalText}
             </Card>
 
             <div className="text-center space-y-2">
-                 <Button onClick={handleConfirmOrder} className="w-full bg-[#841515] hover:bg-[#6a1010] text-white text-lg py-6" disabled={!businessInfo}>
+                 <Button onClick={handleConfirmOrder} className="w-full bg-[#841515] hover:bg-[#6a1010] text-white text-lg py-6" disabled={!businessInfo || !firestore}>
                     Confirmar Pedido por WhatsApp
                 </Button>
                 <p className="text-xs text-muted-foreground">

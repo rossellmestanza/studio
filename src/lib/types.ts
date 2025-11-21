@@ -29,13 +29,32 @@ export interface CartItem extends MenuItem {
   selectedExtras: MenuItemExtra[];
 }
 
+export type OrderStatus = 'Entregado' | 'Pendiente' | 'En preparación' | 'Cancelado';
+export type OrderType = 'delivery' | 'pickup' | 'table';
+
+export interface OrderItem {
+  name: string;
+  quantity: number;
+  price: number;
+  extras?: string;
+}
+
 export interface Order {
   id: string;
   customer: string;
+  phone: string;
+  address?: string;
+  reference?: string;
+  orderType: OrderType;
+  tableNumber?: string;
+  paymentMethod?: string;
   date: string;
+  timestamp: any; // Firestore Timestamp
   total: number;
-  status: 'Entregado' | 'Pendiente' | 'En preparación';
+  status: OrderStatus;
+  items: OrderItem[];
 }
+
 
 export interface Banner {
     id: string;
