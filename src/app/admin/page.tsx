@@ -102,23 +102,18 @@ export default function AdminDashboard() {
   }
 
   const handleDeleteProduct = async (id: string) => {
-    console.log('[DEBUG] handleDeleteProduct called with id:', id);
     if (!firestore) {
-      console.error('[DEBUG] Firestore not available');
+      console.error('Firestore not available');
       return;
     }
-    if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
-        console.log('[DEBUG] User confirmed deletion.');
+    if (window.confirm('¿Estás seguro de que quieres eliminar este producto?')) {
         try {
             await deleteDoc(doc(firestore, 'products', id));
-            console.log('[DEBUG] Product deletion successful.');
             alert('Producto eliminado con éxito.');
         } catch (error) {
-            console.error("[DEBUG] Error deleting product: ", error);
+            console.error("Error deleting product: ", error);
             alert('Error al eliminar el producto. Revisa la consola para más detalles.');
         }
-    } else {
-        console.log('[DEBUG] User cancelled deletion.');
     }
   };
 
@@ -485,7 +480,7 @@ function ProductManagement({ onEdit, onDelete }: { onEdit: (product: MenuItem) =
           <Edit className="mr-2 h-4 w-4" />
           Editar
         </DropdownMenuItem>
-        <DropdownMenuItem className="text-destructive" onClick={() => { console.log('[DEBUG] Delete clicked from ActionMenu'); onDelete(item.id); }}>
+        <DropdownMenuItem className="text-destructive" onClick={() => onDelete(item.id)}>
           <Trash2 className="mr-2 h-4 w-4" />
           Eliminar
         </DropdownMenuItem>
@@ -565,7 +560,7 @@ function ProductManagement({ onEdit, onDelete }: { onEdit: (product: MenuItem) =
                       <p className="font-semibold">S/ {item.price.toFixed(2)}</p>
                       <p className="text-xs text-muted-foreground mt-1">Extras: {item.extras ? item.extras.length : 0}</p>
                     </div>
-                    <Button variant="destructive" size="sm" onClick={() => { console.log('[DEBUG] Delete clicked from direct button'); onDelete(item.id); }}>
+                    <Button variant="destructive" size="sm" onClick={() => onDelete(item.id)}>
                       <Trash2 className="mr-2 h-4 w-4" />
                       Eliminar
                     </Button>
@@ -790,10 +785,16 @@ function CategoryManagement({ selectedCategory, setSelectedCategory, isCategoryD
   const categoriesQuery = useMemoFirebase(() => firestore ? collection(firestore, 'categories') : null, [firestore]);
   const { data: categories, isLoading } = useCollection<MenuCategory>(categoriesQuery);
   
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (!firestore) return;
-    if (confirm('¿Estás seguro de que quieres eliminar esta categoría?')) {
-        deleteDoc(doc(firestore, 'categories', id));
+    if (window.confirm('¿Estás seguro de que quieres eliminar esta categoría?')) {
+        try {
+            await deleteDoc(doc(firestore, 'categories', id));
+            alert('Categoría eliminada con éxito.');
+        } catch (error) {
+            console.error('Error deleting category:', error);
+            alert('Error al eliminar la categoría.');
+        }
     }
   };
 
@@ -932,10 +933,16 @@ function BannerManagement({ onEdit }: { onEdit: (banner: Banner) => void; }) {
   const bannersQuery = useMemoFirebase(() => firestore ? collection(firestore, 'banners') : null, [firestore]);
   const { data: banners, isLoading } = useCollection<Banner>(bannersQuery);
   
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (!firestore) return;
-    if (confirm('¿Estás seguro de que quieres eliminar este banner?')) {
-        deleteDoc(doc(firestore, 'banners', id));
+    if (window.confirm('¿Estás seguro de que quieres eliminar este banner?')) {
+        try {
+            await deleteDoc(doc(firestore, 'banners', id));
+            alert('Banner eliminado con éxito.');
+        } catch(error) {
+            console.error('Error deleting banner:', error);
+            alert('Error al eliminar el banner.');
+        }
     }
   };
 
@@ -1168,10 +1175,16 @@ function LocalManagement({ selectedLocation, setSelectedLocation, isLocationDial
       }
   }, [businessInfo]);
 
-  const handleDeleteLocation = (id: string) => {
+  const handleDeleteLocation = async (id: string) => {
     if (!firestore) return;
-    if (confirm('¿Estás seguro de que quieres eliminar este local?')) {
-        deleteDoc(doc(firestore, 'locations', id));
+    if (window.confirm('¿Estás seguro de que quieres eliminar este local?')) {
+        try {
+            await deleteDoc(doc(firestore, 'locations', id));
+            alert('Local eliminado con éxito.');
+        } catch (error) {
+            console.error('Error deleting location:', error);
+            alert('Error al eliminar el local.');
+        }
     }
   };
   
