@@ -116,10 +116,8 @@ export default function AdminDashboard() {
     if (!firestore) return;
     try {
         await deleteDoc(doc(firestore, 'products', id));
-        alert('Producto eliminado con éxito.');
     } catch (error) {
         console.error("Error deleting product: ", error);
-        alert('Error al eliminar el producto. Revisa la consola para más detalles.');
     }
   };
 
@@ -474,7 +472,7 @@ function ProductManagement({ onEdit, onDelete }: { onEdit: (product: MenuItem) =
   const { data: products, isLoading } = useCollection<MenuItem>(productsQuery);
   const [itemToDelete, setItemToDelete] = useState<MenuItem | null>(null);
 
-  const ActionMenu = ({ item, onEdit }: { item: MenuItem, onEdit: (item: MenuItem) => void }) => (
+  const ActionMenu = ({ item, onEdit, onDelete }: { item: MenuItem; onEdit: (item: MenuItem) => void; onDelete: (id: string) => void; }) => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="h-8 w-8 p-0">
@@ -537,7 +535,7 @@ function ProductManagement({ onEdit, onDelete }: { onEdit: (product: MenuItem) =
                     <TableCell>S/ {item.price.toFixed(2)}</TableCell>
                     <TableCell>{item.extras ? item.extras.length : 0}</TableCell>
                     <TableCell className="text-right">
-                      <ActionMenu item={item} onEdit={onEdit} />
+                      <ActionMenu item={item} onEdit={onEdit} onDelete={onDelete} />
                     </TableCell>
                   </TableRow>
                 ))}
@@ -563,22 +561,21 @@ function ProductManagement({ onEdit, onDelete }: { onEdit: (product: MenuItem) =
                         <p className="font-bold">{item.name}</p>
                         <p className="text-sm text-muted-foreground">{item.category}</p>
                       </div>
-                      <ActionMenu item={item} onEdit={onEdit} />
+                      <ActionMenu item={item} onEdit={onEdit} onDelete={onDelete} />
                     </div>
-                    <div className="flex justify-between items-center mt-2">
-                      <div>
+                     <div className="mt-2">
                         <p className="font-semibold">S/ {item.price.toFixed(2)}</p>
                         <p className="text-xs text-muted-foreground mt-1">Extras: {item.extras ? item.extras.length : 0}</p>
                       </div>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="destructive" size="sm" onClick={() => setItemToDelete(item)}>
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Eliminar
-                        </Button>
-                      </AlertDialogTrigger>
-                    </div>
                   </div>
                 </div>
+                 <Separator className="my-3" />
+                <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="sm" className="w-full" onClick={() => setItemToDelete(item)}>
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Eliminar
+                    </Button>
+                </AlertDialogTrigger>
               </Card>
             ))}
           </div>
@@ -596,7 +593,7 @@ function ProductManagement({ onEdit, onDelete }: { onEdit: (product: MenuItem) =
               <AlertDialogCancel onClick={() => setItemToDelete(null)}>Cancelar</AlertDialogCancel>
               <AlertDialogAction
                   onClick={() => {
-                  onDelete(itemToDelete.id);
+                  if(itemToDelete) onDelete(itemToDelete.id);
                   setItemToDelete(null);
                   }}
                   className="bg-destructive hover:bg-destructive/90"
@@ -821,14 +818,12 @@ function CategoryManagement({ selectedCategory, setSelectedCategory, isCategoryD
   const { data: categories, isLoading } = useCollection<MenuCategory>(categoriesQuery);
   const [itemToDelete, setItemToDelete] = useState<MenuCategory | null>(null);
   
-  const handleDelete = async (id: string) => {
+  const handleDelete = (id: string) => {
     if (!firestore) return;
     try {
-        await deleteDoc(doc(firestore, 'categories', id));
-        alert('Categoría eliminada con éxito.');
+        deleteDoc(doc(firestore, 'categories', id));
     } catch (error) {
         console.error('Error deleting category:', error);
-        alert('Error al eliminar la categoría.');
     }
   };
 
@@ -933,8 +928,8 @@ function CategoryManagement({ selectedCategory, setSelectedCategory, isCategoryD
             <AlertDialogCancel onClick={() => setItemToDelete(null)}>Cancelar</AlertDialogCancel>
             <AlertDialogAction
                 onClick={() => {
-                handleDelete(itemToDelete.id);
-                setItemToDelete(null);
+                  if(itemToDelete) handleDelete(itemToDelete.id);
+                  setItemToDelete(null);
                 }}
                 className="bg-destructive hover:bg-destructive/90"
             >
@@ -998,10 +993,8 @@ function BannerManagement({ onEdit }: { onEdit: (banner: Banner) => void; }) {
     if (!firestore) return;
     try {
         await deleteDoc(doc(firestore, 'banners', id));
-        alert('Banner eliminado con éxito.');
     } catch(error) {
         console.error('Error deleting banner:', error);
-        alert('Error al eliminar el banner.');
     }
   };
 
@@ -1108,8 +1101,8 @@ function BannerManagement({ onEdit }: { onEdit: (banner: Banner) => void; }) {
             <AlertDialogCancel onClick={() => setItemToDelete(null)}>Cancelar</AlertDialogCancel>
             <AlertDialogAction
                 onClick={() => {
-                handleDelete(itemToDelete.id);
-                setItemToDelete(null);
+                  if (itemToDelete) handleDelete(itemToDelete.id);
+                  setItemToDelete(null);
                 }}
                 className="bg-destructive hover:bg-destructive/90"
             >
@@ -1265,10 +1258,8 @@ function LocalManagement({ selectedLocation, setSelectedLocation, isLocationDial
     if (!firestore) return;
     try {
         await deleteDoc(doc(firestore, 'locations', id));
-        alert('Local eliminado con éxito.');
     } catch (error) {
         console.error('Error deleting location:', error);
-        alert('Error al eliminar el local.');
     }
   };
   
@@ -1514,7 +1505,7 @@ function LocalManagement({ selectedLocation, setSelectedLocation, isLocationDial
             <AlertDialogCancel onClick={() => setItemToDelete(null)}>Cancelar</AlertDialogCancel>
             <AlertDialogAction
                 onClick={() => {
-                handleDeleteLocation(itemToDelete.id);
+                if (itemToDelete) handleDeleteLocation(itemToDelete.id);
                 setItemToDelete(null);
                 }}
                 className="bg-destructive hover:bg-destructive/90"
@@ -1600,5 +1591,6 @@ function LocationDialog({ setDialogOpen, location }: { setDialogOpen: (isOpen: b
     
 
     
+
 
 
