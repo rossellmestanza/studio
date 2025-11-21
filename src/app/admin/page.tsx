@@ -62,8 +62,9 @@ import {
 } from 'recharts';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import Link from 'next/link';
-import { useAuth, useUser, useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
+import { useAuth, useUser, useFirestore, useStorage, useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, doc, setDoc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -612,6 +613,7 @@ function ProductManagement({ onEdit, onDelete }: { onEdit: (product: MenuItem) =
 
 function ProductDialog({ setDialogOpen, product }: { setDialogOpen: (isOpen: boolean) => void; product?: MenuItem | null }) {
   const firestore = useFirestore();
+  const storage = useStorage();
   const categoriesQuery = useMemoFirebase(() => firestore ? collection(firestore, 'categories') : null, [firestore]);
   const { data: categories, isLoading: categoriesLoading } = useCollection<MenuCategory>(categoriesQuery);
   
@@ -678,38 +680,32 @@ function ProductDialog({ setDialogOpen, product }: { setDialogOpen: (isOpen: boo
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!firestore) return;
+    if (!firestore || !storage) return;
 
     setIsUploading(true);
     let imageUrl = product?.image || '';
 
     if (imageFile) {
-        setUploadProgress(20);
-        
-        const formData = new FormData();
-        formData.append('file', imageFile);
-        formData.append('folder', 'products');
+      const storageRef = ref(storage, `products/${Date.now()}_${imageFile.name}`);
+      const uploadTask = uploadBytesResumable(storageRef, imageFile);
 
-        try {
-            const response = await fetch('/api/upload', {
-                method: 'POST',
-                body: formData,
-            });
-
-            if (!response.ok) {
-                throw new Error('Image upload failed');
-            }
-
-            const { url } = await response.json();
-            imageUrl = url;
-            setUploadProgress(100);
-
-        } catch (error) {
-            console.error("Error uploading image:", error);
+      await new Promise<void>((resolve, reject) => {
+        uploadTask.on('state_changed',
+          (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            setUploadProgress(progress);
+          },
+          (error) => {
+            console.error("Upload failed:", error);
             setIsUploading(false);
-            // Optionally, show an error toast to the user
-            return;
-        }
+            reject(error);
+          },
+          async () => {
+            imageUrl = await getDownloadURL(uploadTask.snapshot.ref);
+            resolve();
+          }
+        );
+      });
     }
 
     const productData: Omit<MenuItem, 'id'> = {
@@ -723,13 +719,18 @@ function ProductDialog({ setDialogOpen, product }: { setDialogOpen: (isOpen: boo
         extras: extras,
     };
 
-    if (product?.id) {
-        const productRef = doc(firestore, 'products', product.id);
-        await updateDoc(productRef, productData);
-    } else {
-        const productsCollection = collection(firestore, 'products');
-        await addDoc(productsCollection, productData);
+    try {
+        if (product?.id) {
+            const productRef = doc(firestore, 'products', product.id);
+            await updateDoc(productRef, productData);
+        } else {
+            const productsCollection = collection(firestore, 'products');
+            await addDoc(productsCollection, productData);
+        }
+    } catch (error) {
+        console.error("Error saving document:", error);
     }
+
 
     setIsUploading(false);
     setDialogOpen(false);
@@ -1142,6 +1143,7 @@ function BannerManagement({ onEdit }: { onEdit: (banner: Banner) => void; }) {
 
 function BannerDialog({ setDialogOpen, banner }: { setDialogOpen: (isOpen: boolean) => void; banner?: Banner | null }) {
   const firestore = useFirestore();
+  const storage = useStorage();
   const [formData, setFormData] = useState<Partial<Banner>>({});
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -1180,35 +1182,33 @@ function BannerDialog({ setDialogOpen, banner }: { setDialogOpen: (isOpen: boole
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!firestore) return;
+    if (!firestore || !storage) return;
 
     setIsUploading(true);
     let imageUrl = banner?.imageUrl || '';
 
     if (imageFile) {
-        setUploadProgress(20);
-        const formData = new FormData();
-        formData.append('file', imageFile);
-        formData.append('folder', 'banners');
+      const storageRef = ref(storage, `banners/${Date.now()}_${imageFile.name}`);
+      const uploadTask = uploadBytesResumable(storageRef, imageFile);
 
-        try {
-            const response = await fetch('/api/upload', {
-                method: 'POST',
-                body: formData,
-            });
-
-            if (!response.ok) throw new Error('Image upload failed');
-            
-            const { url } = await response.json();
-            imageUrl = url;
-            setUploadProgress(100);
-        } catch (error) {
-            console.error("Error uploading image:", error);
+      await new Promise<void>((resolve, reject) => {
+        uploadTask.on('state_changed',
+          (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            setUploadProgress(progress);
+          },
+          (error) => {
+            console.error("Upload failed:", error);
             setIsUploading(false);
-            return;
-        }
+            reject(error);
+          },
+          async () => {
+            imageUrl = await getDownloadURL(uploadTask.snapshot.ref);
+            resolve();
+          }
+        );
+      });
     }
-
 
     const bannerData: Omit<Banner, 'id'> = {
         title: formData.title || '',
@@ -1275,6 +1275,7 @@ function BannerDialog({ setDialogOpen, banner }: { setDialogOpen: (isOpen: boole
 
 function LocalManagement({ selectedLocation, setSelectedLocation, isLocationDialogOpen, setIsLocationDialogOpen }: { selectedLocation: Location | null; setSelectedLocation: (location: Location | null) => void; isLocationDialogOpen: boolean; setIsLocationDialogOpen: (isOpen: boolean) => void; }) {
   const firestore = useFirestore();
+  const storage = useStorage();
   const businessInfoDoc = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'businessInfo') : null, [firestore]);
   const { data: businessInfo, isLoading: infoLoading } = useDoc<BusinessInfo>(businessInfoDoc);
   const locationsQuery = useMemoFirebase(() => firestore ? collection(firestore, 'locations') : null, [firestore]);
@@ -1332,28 +1333,29 @@ function LocalManagement({ selectedLocation, setSelectedLocation, isLocationDial
   
   const handleInfoSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!firestore || !businessInfoDoc) return;
+    if (!firestore || !storage || !businessInfoDoc) return;
     setIsLogoUploading(true);
 
     let logoUrl = businessInfo?.logoUrl || '';
 
     if (logoFile) {
-        const formData = new FormData();
-        formData.append('file', logoFile);
-        formData.append('folder', 'logos');
-        try {
-            const response = await fetch('/api/upload', {
-                method: 'POST',
-                body: formData,
-            });
-            if (!response.ok) throw new Error('Logo upload failed');
-            const { url } = await response.json();
-            logoUrl = url;
-        } catch (error) {
-            console.error("Error uploading logo:", error);
-            setIsLogoUploading(false);
-            return;
-        }
+       const storageRef = ref(storage, `logos/${Date.now()}_${logoFile.name}`);
+       const uploadTask = uploadBytesResumable(storageRef, logoFile);
+
+       await new Promise<void>((resolve, reject) => {
+         uploadTask.on('state_changed',
+           () => {},
+           (error) => {
+             console.error("Upload failed:", error);
+             setIsLogoUploading(false);
+             reject(error);
+           },
+           async () => {
+             logoUrl = await getDownloadURL(uploadTask.snapshot.ref);
+             resolve();
+           }
+         );
+       });
     }
 
     const dataToSave = { 
