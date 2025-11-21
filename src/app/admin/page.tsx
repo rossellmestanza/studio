@@ -462,8 +462,8 @@ function ProductManagement({ onEdit }: { onEdit: (product: MenuItem) => void; })
         }
     }
   };
-
-  const ActionMenu = ({ item }: { item: MenuItem }) => (
+  
+  const ActionMenu = ({ item, onEdit, onDelete }: { item: MenuItem, onEdit: (item: MenuItem) => void, onDelete: (id: string) => void }) => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="h-8 w-8 p-0">
@@ -476,7 +476,7 @@ function ProductManagement({ onEdit }: { onEdit: (product: MenuItem) => void; })
           <Edit className="mr-2 h-4 w-4" />
           Editar
         </DropdownMenuItem>
-        <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(item.id)}>
+        <DropdownMenuItem className="text-destructive" onClick={() => onDelete(item.id)}>
           <Trash2 className="mr-2 h-4 w-4" />
           Eliminar
         </DropdownMenuItem>
@@ -523,7 +523,7 @@ function ProductManagement({ onEdit }: { onEdit: (product: MenuItem) => void; })
                   <TableCell>S/ {item.price.toFixed(2)}</TableCell>
                   <TableCell>{item.extras ? item.extras.length : 0}</TableCell>
                   <TableCell className="text-right">
-                    <ActionMenu item={item} />
+                    <ActionMenu item={item} onEdit={onEdit} onDelete={handleDelete} />
                   </TableCell>
                 </TableRow>
               ))}
@@ -549,7 +549,7 @@ function ProductManagement({ onEdit }: { onEdit: (product: MenuItem) => void; })
                       <p className="font-bold">{item.name}</p>
                       <p className="text-sm text-muted-foreground">{item.category}</p>
                     </div>
-                    <ActionMenu item={item} />
+                    <ActionMenu item={item} onEdit={onEdit} onDelete={handleDelete} />
                   </div>
                   <p className="font-semibold mt-2">S/ {item.price.toFixed(2)}</p>
                   <p className="text-xs text-muted-foreground mt-1">Extras: {item.extras ? item.extras.length : 0}</p>
