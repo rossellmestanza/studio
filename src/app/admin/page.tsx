@@ -21,6 +21,17 @@ import {
   DialogTrigger,
   DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -102,18 +113,13 @@ export default function AdminDashboard() {
   }
 
   const handleDeleteProduct = async (id: string) => {
-    if (!firestore) {
-      console.error('Firestore not available');
-      return;
-    }
-    if (window.confirm('¿Estás seguro de que quieres eliminar este producto?')) {
-        try {
-            await deleteDoc(doc(firestore, 'products', id));
-            alert('Producto eliminado con éxito.');
-        } catch (error) {
-            console.error("Error deleting product: ", error);
-            alert('Error al eliminar el producto. Revisa la consola para más detalles.');
-        }
+    if (!firestore) return;
+    try {
+        await deleteDoc(doc(firestore, 'products', id));
+        alert('Producto eliminado con éxito.');
+    } catch (error) {
+        console.error("Error deleting product: ", error);
+        alert('Error al eliminar el producto. Revisa la consola para más detalles.');
     }
   };
 
@@ -466,8 +472,9 @@ function ProductManagement({ onEdit, onDelete }: { onEdit: (product: MenuItem) =
   const firestore = useFirestore();
   const productsQuery = useMemoFirebase(() => firestore ? collection(firestore, 'products') : null, [firestore]);
   const { data: products, isLoading } = useCollection<MenuItem>(productsQuery);
-  
-  const ActionMenu = ({ item, onEdit, onDelete }: { item: MenuItem, onEdit: (item: MenuItem) => void, onDelete: (id: string) => void }) => (
+  const [itemToDelete, setItemToDelete] = useState<MenuItem | null>(null);
+
+  const ActionMenu = ({ item, onEdit }: { item: MenuItem, onEdit: (item: MenuItem) => void }) => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="h-8 w-8 p-0">
@@ -480,10 +487,12 @@ function ProductManagement({ onEdit, onDelete }: { onEdit: (product: MenuItem) =
           <Edit className="mr-2 h-4 w-4" />
           Editar
         </DropdownMenuItem>
-        <DropdownMenuItem className="text-destructive" onClick={() => onDelete(item.id)}>
-          <Trash2 className="mr-2 h-4 w-4" />
-          Eliminar
-        </DropdownMenuItem>
+        <AlertDialogTrigger asChild>
+          <DropdownMenuItem className="text-destructive" onClick={() => setItemToDelete(item)}>
+            <Trash2 className="mr-2 h-4 w-4" />
+            Eliminar
+          </DropdownMenuItem>
+        </AlertDialogTrigger>
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -491,6 +500,7 @@ function ProductManagement({ onEdit, onDelete }: { onEdit: (product: MenuItem) =
   if (isLoading) return <div>Cargando productos...</div>
 
   return (
+    <>
     <Card>
       <CardHeader>
         <CardTitle>Productos</CardTitle>
@@ -527,7 +537,7 @@ function ProductManagement({ onEdit, onDelete }: { onEdit: (product: MenuItem) =
                   <TableCell>S/ {item.price.toFixed(2)}</TableCell>
                   <TableCell>{item.extras ? item.extras.length : 0}</TableCell>
                   <TableCell className="text-right">
-                    <ActionMenu item={item} onEdit={onEdit} onDelete={onDelete} />
+                    <ActionMenu item={item} onEdit={onEdit} />
                   </TableCell>
                 </TableRow>
               ))}
@@ -553,17 +563,19 @@ function ProductManagement({ onEdit, onDelete }: { onEdit: (product: MenuItem) =
                       <p className="font-bold">{item.name}</p>
                       <p className="text-sm text-muted-foreground">{item.category}</p>
                     </div>
-                    <ActionMenu item={item} onEdit={onEdit} onDelete={onDelete} />
+                    <ActionMenu item={item} onEdit={onEdit} />
                   </div>
                   <div className="flex justify-between items-center mt-2">
                     <div>
                       <p className="font-semibold">S/ {item.price.toFixed(2)}</p>
                       <p className="text-xs text-muted-foreground mt-1">Extras: {item.extras ? item.extras.length : 0}</p>
                     </div>
-                    <Button variant="destructive" size="sm" onClick={() => onDelete(item.id)}>
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Eliminar
-                    </Button>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" size="sm" onClick={() => setItemToDelete(item)}>
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Eliminar
+                      </Button>
+                    </AlertDialogTrigger>
                   </div>
                 </div>
               </div>
@@ -572,6 +584,29 @@ function ProductManagement({ onEdit, onDelete }: { onEdit: (product: MenuItem) =
         </div>
       </CardContent>
     </Card>
+    {itemToDelete && (
+        <AlertDialogContent>
+            <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+                Esta acción no se puede deshacer. Esto eliminará permanentemente el producto "{itemToDelete.name}".
+            </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setItemToDelete(null)}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+                onClick={() => {
+                onDelete(itemToDelete.id);
+                setItemToDelete(null);
+                }}
+                className="bg-destructive hover:bg-destructive/90"
+            >
+                Eliminar
+            </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    )}
+    </>
   );
 }
 
@@ -784,17 +819,16 @@ function CategoryManagement({ selectedCategory, setSelectedCategory, isCategoryD
   const firestore = useFirestore();
   const categoriesQuery = useMemoFirebase(() => firestore ? collection(firestore, 'categories') : null, [firestore]);
   const { data: categories, isLoading } = useCollection<MenuCategory>(categoriesQuery);
+  const [itemToDelete, setItemToDelete] = useState<MenuCategory | null>(null);
   
   const handleDelete = async (id: string) => {
     if (!firestore) return;
-    if (window.confirm('¿Estás seguro de que quieres eliminar esta categoría?')) {
-        try {
-            await deleteDoc(doc(firestore, 'categories', id));
-            alert('Categoría eliminada con éxito.');
-        } catch (error) {
-            console.error('Error deleting category:', error);
-            alert('Error al eliminar la categoría.');
-        }
+    try {
+        await deleteDoc(doc(firestore, 'categories', id));
+        alert('Categoría eliminada con éxito.');
+    } catch (error) {
+        console.error('Error deleting category:', error);
+        alert('Error al eliminar la categoría.');
     }
   };
 
@@ -820,10 +854,12 @@ function CategoryManagement({ selectedCategory, setSelectedCategory, isCategoryD
           <Edit className="mr-2 h-4 w-4" />
           Editar
         </DropdownMenuItem>
-        <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(cat.id)}>
-          <Trash2 className="mr-2 h-4 w-4" />
-          Eliminar
-        </DropdownMenuItem>
+        <AlertDialogTrigger asChild>
+            <DropdownMenuItem className="text-destructive" onClick={() => setItemToDelete(cat)}>
+              <Trash2 className="mr-2 h-4 w-4" />
+              Eliminar
+            </DropdownMenuItem>
+        </AlertDialogTrigger>
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -831,59 +867,83 @@ function CategoryManagement({ selectedCategory, setSelectedCategory, isCategoryD
   if (isLoading) return <div>Cargando categorías...</div>
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-          <CardTitle>Categorías</CardTitle>
-          <CardDescription>Gestiona las categorías de tu menú.</CardDescription>
-        </div>
-         <Dialog open={isCategoryDialogOpen} onOpenChange={(isOpen) => { setIsCategoryDialogOpen(isOpen); if (!isOpen) setSelectedCategory(null); }}>
-          <DialogTrigger asChild>
-            <Button size="sm" className="gap-1" onClick={handleAddNew}>
-              <PlusCircle className="h-4 w-4" />
-              Añadir Categoría
-            </Button>
-          </DialogTrigger>
-          <CategoryDialog setDialogOpen={setIsCategoryDialogOpen} category={selectedCategory}/>
-        </Dialog>
-      </CardHeader>
-      <CardContent>
-        {/* Vista de tabla para pantallas grandes */}
-        <div className="hidden md:block">
-           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nombre</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {categories && categories.map((cat) => (
-                <TableRow key={cat.id}>
-                  <TableCell className="font-medium">{cat.name}</TableCell>
-                  <TableCell className="text-right">
-                    <ActionMenu cat={cat} />
-                  </TableCell>
+    <AlertDialog>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Categorías</CardTitle>
+            <CardDescription>Gestiona las categorías de tu menú.</CardDescription>
+          </div>
+          <Dialog open={isCategoryDialogOpen} onOpenChange={(isOpen) => { setIsCategoryDialogOpen(isOpen); if (!isOpen) setSelectedCategory(null); }}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="gap-1" onClick={handleAddNew}>
+                <PlusCircle className="h-4 w-4" />
+                Añadir Categoría
+              </Button>
+            </DialogTrigger>
+            <CategoryDialog setDialogOpen={setIsCategoryDialogOpen} category={selectedCategory}/>
+          </Dialog>
+        </CardHeader>
+        <CardContent>
+          {/* Vista de tabla para pantallas grandes */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
+              </TableHeader>
+              <TableBody>
+                {categories && categories.map((cat) => (
+                  <TableRow key={cat.id}>
+                    <TableCell className="font-medium">{cat.name}</TableCell>
+                    <TableCell className="text-right">
+                      <ActionMenu cat={cat} />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+          
+          {/* Vista de tarjetas para pantallas pequeñas */}
+          <div className="grid gap-4 md:hidden">
+              {categories && categories.map((cat) => (
+                  <Card key={cat.id} className="p-4">
+                      <div className="flex justify-between items-center">
+                          <p className="font-bold">{cat.name}</p>
+                          <ActionMenu cat={cat} />
+                      </div>
+                  </Card>
               ))}
-            </TableBody>
-          </Table>
-        </div>
-        
-        {/* Vista de tarjetas para pantallas pequeñas */}
-        <div className="grid gap-4 md:hidden">
-            {categories && categories.map((cat) => (
-                <Card key={cat.id} className="p-4">
-                    <div className="flex justify-between items-center">
-                        <p className="font-bold">{cat.name}</p>
-                         <ActionMenu cat={cat} />
-                    </div>
-                </Card>
-            ))}
-        </div>
+          </div>
 
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+       {itemToDelete && (
+        <AlertDialogContent>
+            <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+                Esta acción no se puede deshacer. Esto eliminará permanentemente la categoría "{itemToDelete.name}".
+            </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setItemToDelete(null)}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+                onClick={() => {
+                handleDelete(itemToDelete.id);
+                setItemToDelete(null);
+                }}
+                className="bg-destructive hover:bg-destructive/90"
+            >
+                Eliminar
+            </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      )}
+    </AlertDialog>
   );
 }
 
@@ -932,17 +992,16 @@ function BannerManagement({ onEdit }: { onEdit: (banner: Banner) => void; }) {
   const firestore = useFirestore();
   const bannersQuery = useMemoFirebase(() => firestore ? collection(firestore, 'banners') : null, [firestore]);
   const { data: banners, isLoading } = useCollection<Banner>(bannersQuery);
+  const [itemToDelete, setItemToDelete] = useState<Banner | null>(null);
   
   const handleDelete = async (id: string) => {
     if (!firestore) return;
-    if (window.confirm('¿Estás seguro de que quieres eliminar este banner?')) {
-        try {
-            await deleteDoc(doc(firestore, 'banners', id));
-            alert('Banner eliminado con éxito.');
-        } catch(error) {
-            console.error('Error deleting banner:', error);
-            alert('Error al eliminar el banner.');
-        }
+    try {
+        await deleteDoc(doc(firestore, 'banners', id));
+        alert('Banner eliminado con éxito.');
+    } catch(error) {
+        console.error('Error deleting banner:', error);
+        alert('Error al eliminar el banner.');
     }
   };
 
@@ -958,9 +1017,11 @@ function BannerManagement({ onEdit }: { onEdit: (banner: Banner) => void; }) {
         <DropdownMenuItem onClick={() => onEdit(item)}>
           <Edit className="mr-2 h-4 w-4" /> Editar
         </DropdownMenuItem>
-        <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(item.id)}>
-          <Trash2 className="mr-2 h-4 w-4" /> Eliminar
-        </DropdownMenuItem>
+        <AlertDialogTrigger asChild>
+          <DropdownMenuItem className="text-destructive" onClick={() => setItemToDelete(item)}>
+            <Trash2 className="mr-2 h-4 w-4" /> Eliminar
+          </DropdownMenuItem>
+        </AlertDialogTrigger>
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -968,72 +1029,96 @@ function BannerManagement({ onEdit }: { onEdit: (banner: Banner) => void; }) {
   if (isLoading) return <div>Cargando banners...</div>
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Banners</CardTitle>
-        <CardDescription>Gestiona los banners de la página principal.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        {/* Vista de tabla para pantallas grandes */}
-        <div className="hidden md:block">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Imagen</TableHead>
-                <TableHead>Título</TableHead>
-                <TableHead>Descripción</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {banners && banners.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell>
-                    <Image
-                      src={item.imageUrl}
-                      alt={item.title}
-                      width={100}
-                      height={56}
-                      className="rounded-md object-cover"
-                    />
-                  </TableCell>
-                  <TableCell className="font-medium">{item.title}</TableCell>
-                  <TableCell>{item.description}</TableCell>
-                  <TableCell className="text-right">
-                    <ActionMenu item={item} />
-                  </TableCell>
+    <AlertDialog>
+      <Card>
+        <CardHeader>
+          <CardTitle>Banners</CardTitle>
+          <CardDescription>Gestiona los banners de la página principal.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {/* Vista de tabla para pantallas grandes */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Imagen</TableHead>
+                  <TableHead>Título</TableHead>
+                  <TableHead>Descripción</TableHead>
+                  <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {banners && banners.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell>
+                      <Image
+                        src={item.imageUrl}
+                        alt={item.title}
+                        width={100}
+                        height={56}
+                        className="rounded-md object-cover"
+                      />
+                    </TableCell>
+                    <TableCell className="font-medium">{item.title}</TableCell>
+                    <TableCell>{item.description}</TableCell>
+                    <TableCell className="text-right">
+                      <ActionMenu item={item} />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
 
-        {/* Vista de tarjetas para pantallas pequeñas */}
-        <div className="grid gap-4 md:hidden">
-          {banners && banners.map((item) => (
-            <Card key={item.id} className="overflow-hidden">
-              <div className="relative h-32 w-full">
-                <Image
-                  src={item.imageUrl}
-                  alt={item.title}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <div className="p-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-bold">{item.title}</h3>
-                    <p className="text-sm text-muted-foreground">{item.description}</p>
-                  </div>
-                  <ActionMenu item={item} />
+          {/* Vista de tarjetas para pantallas pequeñas */}
+          <div className="grid gap-4 md:hidden">
+            {banners && banners.map((item) => (
+              <Card key={item.id} className="overflow-hidden">
+                <div className="relative h-32 w-full">
+                  <Image
+                    src={item.imageUrl}
+                    alt={item.title}
+                    fill
+                    className="object-cover"
+                  />
                 </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+                <div className="p-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-bold">{item.title}</h3>
+                      <p className="text-sm text-muted-foreground">{item.description}</p>
+                    </div>
+                    <ActionMenu item={item} />
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+      {itemToDelete && (
+        <AlertDialogContent>
+            <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+                Esta acción no se puede deshacer. Esto eliminará permanentemente el banner "{itemToDelete.title}".
+            </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setItemToDelete(null)}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+                onClick={() => {
+                handleDelete(itemToDelete.id);
+                setItemToDelete(null);
+                }}
+                className="bg-destructive hover:bg-destructive/90"
+            >
+                Eliminar
+            </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      )}
+    </AlertDialog>
   );
 }
 
@@ -1167,6 +1252,7 @@ function LocalManagement({ selectedLocation, setSelectedLocation, isLocationDial
   const [isLogoUploading, setIsLogoUploading] = useState(false);
   const [infoFormData, setInfoFormData] = useState<Partial<BusinessInfo>>({});
   const logoInputRef = useRef<HTMLInputElement>(null);
+  const [itemToDelete, setItemToDelete] = useState<Location | null>(null);
 
   useEffect(() => {
       if (businessInfo) {
@@ -1177,14 +1263,12 @@ function LocalManagement({ selectedLocation, setSelectedLocation, isLocationDial
 
   const handleDeleteLocation = async (id: string) => {
     if (!firestore) return;
-    if (window.confirm('¿Estás seguro de que quieres eliminar este local?')) {
-        try {
-            await deleteDoc(doc(firestore, 'locations', id));
-            alert('Local eliminado con éxito.');
-        } catch (error) {
-            console.error('Error deleting location:', error);
-            alert('Error al eliminar el local.');
-        }
+    try {
+        await deleteDoc(doc(firestore, 'locations', id));
+        alert('Local eliminado con éxito.');
+    } catch (error) {
+        console.error('Error deleting location:', error);
+        alert('Error al eliminar el local.');
     }
   };
   
@@ -1262,9 +1346,11 @@ function LocalManagement({ selectedLocation, setSelectedLocation, isLocationDial
         <DropdownMenuItem onClick={() => handleEditLocation(loc)}>
           <Edit className="mr-2 h-4 w-4" /> Editar
         </DropdownMenuItem>
-        <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteLocation(loc.id)}>
-          <Trash2 className="mr-2 h-4 w-4" /> Eliminar
-        </DropdownMenuItem>
+        <AlertDialogTrigger asChild>
+          <DropdownMenuItem className="text-destructive" onClick={() => setItemToDelete(loc)}>
+            <Trash2 className="mr-2 h-4 w-4" /> Eliminar
+          </DropdownMenuItem>
+        </AlertDialogTrigger>
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -1272,6 +1358,7 @@ function LocalManagement({ selectedLocation, setSelectedLocation, isLocationDial
   if (infoLoading || locationsLoading) return <div>Cargando información del local...</div>
 
   return (
+    <AlertDialog>
     <div className="grid gap-6">
       <Card>
         <CardHeader>
@@ -1415,6 +1502,29 @@ function LocalManagement({ selectedLocation, setSelectedLocation, isLocationDial
         </CardContent>
       </Card>
     </div>
+    {itemToDelete && (
+        <AlertDialogContent>
+            <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+                Esta acción no se puede deshacer. Esto eliminará permanentemente el local "{itemToDelete.name}".
+            </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setItemToDelete(null)}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+                onClick={() => {
+                handleDeleteLocation(itemToDelete.id);
+                setItemToDelete(null);
+                }}
+                className="bg-destructive hover:bg-destructive/90"
+            >
+                Eliminar
+            </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      )}
+    </AlertDialog>
   );
 }
 
@@ -1490,3 +1600,4 @@ function LocationDialog({ setDialogOpen, location }: { setDialogOpen: (isOpen: b
     
 
     
+
