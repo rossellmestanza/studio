@@ -7,7 +7,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft, ShoppingCart } from 'lucide-react';
 
-import { menuItems } from '@/lib/menu-data';
 import type { MenuItem, MenuItemExtra } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/CartContext';
@@ -16,17 +15,21 @@ import Footer from '@/components/Footer';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { addToCart } = useCart();
+  const firestore = useFirestore();
 
   const [selectedExtras, setSelectedExtras] = useState<MenuItemExtra[]>([]);
 
-  const item: MenuItem | undefined = menuItems.find(
-    (menuItem) => menuItem.id === params.id
-  );
+  const productId = Array.isArray(params.id) ? params.id[0] : params.id;
+  const productDocRef = useMemoFirebase(() => (firestore && productId) ? doc(firestore, 'products', productId) : null, [firestore, productId]);
+  const { data: item, isLoading, error } = useDoc<MenuItem>(productDocRef);
 
   const totalPrice = useMemo(() => {
     if (!item) return 0;
@@ -44,6 +47,36 @@ export default function ProductDetailPage() {
     });
   };
 
+  const handleAddToCart = () => {
+    if (!item) return;
+    addToCart(item, 1, '', selectedExtras);
+  };
+  
+  if (isLoading) {
+    return (
+        <div className="min-h-screen flex flex-col bg-background">
+            <Header />
+            <main className="flex-grow container mx-auto px-4 py-8">
+                 <div className="mb-6">
+                    <Skeleton className="h-10 w-24" />
+                </div>
+                <div className="grid md:grid-cols-2 gap-8 md:gap-12">
+                    <Skeleton className="aspect-square rounded-lg" />
+                    <div className="space-y-4">
+                        <Skeleton className="h-12 w-3/4" />
+                        <Skeleton className="h-6 w-full" />
+                        <Skeleton className="h-6 w-2/3" />
+                         <Skeleton className="h-20 w-full" />
+                         <Skeleton className="h-12 w-40" />
+                         <Skeleton className="h-14 w-full md:w-60" />
+                    </div>
+                </div>
+            </main>
+            <Footer />
+        </div>
+    )
+  }
+
   if (!item) {
     return (
       <div className="min-h-screen flex flex-col bg-background">
@@ -51,7 +84,7 @@ export default function ProductDetailPage() {
         <main className="flex-grow container mx-auto px-4 py-8 text-center">
           <h1 className="text-2xl font-bold">Producto no encontrado</h1>
           <p className="text-muted-foreground mt-2">
-            El producto que buscas no existe.
+            {error ? 'Error al cargar el producto.' : 'El producto que buscas no existe.'}
           </p>
           <Button asChild className="mt-6">
             <Link href="/carta">Volver a la carta</Link>
@@ -61,10 +94,6 @@ export default function ProductDetailPage() {
       </div>
     );
   }
-
-  const handleAddToCart = () => {
-    addToCart(item, 1, '', selectedExtras);
-  };
 
   return (
     <div className="min-h-screen flex flex-col bg-background">

@@ -1,9 +1,9 @@
+
 "use client";
 
 import { useState } from "react";
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { categories, menuItems } from "@/lib/menu-data";
 import MenuItemCard from "./MenuItemCard";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -14,17 +14,41 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import type { MenuCategory, MenuItem } from "@/lib/types";
+import { collection, limit, query, where } from "firebase/firestore";
 
 export default function HomeMenuPreview() {
   const [activeTab, setActiveTab] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const firestore = useFirestore();
 
-  const filteredMenuItems = menuItems.filter(item => {
-    const matchesCategory = activeTab === 'all' || item.category === activeTab;
-    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesCategory && matchesSearch;
-  }).slice(0, 8);
+  const categoriesQuery = useMemoFirebase(() => firestore ? collection(firestore, 'categories') : null, [firestore]);
+  const { data: categories, isLoading: categoriesLoading } = useCollection<MenuCategory>(categoriesQuery);
+  
+  const productsQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    
+    let q = query(collection(firestore, 'products'), limit(8));
+
+    if (activeTab !== 'all') {
+      q = query(q, where('category', '==', activeTab));
+    }
+    
+    // Note: Firestore can't do text search like this efficiently.
+    // For a real app, a search service like Algolia or Typesense is recommended.
+    // The filter below is done on the client side.
+
+    return q;
+  }, [firestore, activeTab]);
+
+  const { data: menuItems, isLoading: productsLoading } = useCollection<MenuItem>(productsQuery);
+
+
+  const filteredMenuItems = menuItems?.filter(item => 
+    item.name.toLowerCase().includes(searchTerm.toLowerCase())
+  ) || [];
 
   return (
     <section className="w-full py-12 md:py-20 bg-background">
@@ -41,8 +65,8 @@ export default function HomeMenuPreview() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos</SelectItem>
-                {categories.map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
+                {categories && categories.map((category) => (
+                  <SelectItem key={category.id} value={category.name}>
                     {category.name.toUpperCase()}
                   </SelectItem>
                 ))}
@@ -52,10 +76,10 @@ export default function HomeMenuPreview() {
           <Tabs defaultValue="all" onValueChange={setActiveTab} className="w-full md:w-auto hidden md:block">
             <TabsList className="grid grid-cols-2 sm:grid-cols-4 md:flex h-auto bg-transparent p-0">
               <TabsTrigger value="all" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:rounded-md rounded-md mr-2 bg-secondary">Todos</TabsTrigger>
-              {categories.map((category) => (
+              {categories && categories.map((category) => (
                 <TabsTrigger 
                   key={category.id} 
-                  value={category.id}
+                  value={category.name}
                   className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:rounded-md rounded-md mr-2 bg-secondary"
                 >
                   {category.name.toUpperCase()}

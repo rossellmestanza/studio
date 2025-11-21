@@ -1,7 +1,7 @@
+
 "use client";
 
 import { useState } from "react";
-import { categories, menuItems } from "@/lib/menu-data";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MenuItemCard from "@/components/MenuItemCard";
 import { Input } from "@/components/ui/input";
@@ -13,16 +13,38 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import type { MenuCategory, MenuItem } from "@/lib/types";
+import { collection, query, where } from "firebase/firestore";
+import { Skeleton } from "./ui/skeleton";
 
 export default function MenuPage() {
   const [activeTab, setActiveTab] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const firestore = useFirestore();
 
-  const filteredMenuItems = menuItems.filter(item => {
-    const matchesCategory = activeTab === 'all' || item.category === activeTab;
-    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  const categoriesQuery = useMemoFirebase(() => firestore ? collection(firestore, 'categories') : null, [firestore]);
+  const { data: categories, isLoading: categoriesLoading } = useCollection<MenuCategory>(categoriesQuery);
+
+  const productsQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    
+    let q = query(collection(firestore, 'products'));
+
+    if (activeTab !== 'all') {
+      q = query(q, where('category', '==', activeTab));
+    }
+    
+    // The filter below is done on the client side because Firestore doesn't support native text search.
+    // For a production app, a dedicated search service like Algolia or Typesense would be better.
+    return q;
+  }, [firestore, activeTab]);
+
+  const { data: menuItems, isLoading: productsLoading } = useCollection<MenuItem>(productsQuery);
+
+  const filteredMenuItems = menuItems?.filter(item => 
+    item.name.toLowerCase().includes(searchTerm.toLowerCase())
+  ) || [];
 
   return (
     <>
@@ -39,8 +61,8 @@ export default function MenuPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos</SelectItem>
-                {categories.map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
+                {categories && categories.map((category) => (
+                  <SelectItem key={category.id} value={category.name}>
                     {category.name.toUpperCase()}
                   </SelectItem>
                 ))}
@@ -50,10 +72,10 @@ export default function MenuPage() {
         <Tabs defaultValue="all" onValueChange={setActiveTab} className="w-full md:w-auto hidden md:block">
           <TabsList className="grid grid-cols-2 sm:grid-cols-4 md:flex h-auto bg-transparent p-0">
             <TabsTrigger value="all" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:rounded-md rounded-md mr-2 bg-secondary">Todos</TabsTrigger>
-            {categories.map((category) => (
+            {categories && categories.map((category) => (
               <TabsTrigger 
                 key={category.id} 
-                value={category.id}
+                value={category.name}
                 className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:rounded-md rounded-md mr-2 bg-secondary"
               >
                 {category.name.toUpperCase()}
@@ -74,9 +96,15 @@ export default function MenuPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
-        {filteredMenuItems.map(item => (
-          <MenuItemCard key={item.id} item={item} variant="compact" />
-        ))}
+        {productsLoading ? (
+            [...Array(8)].map((_, i) => (
+                <Skeleton key={i} className="h-[350px] w-full rounded-lg" />
+            ))
+        ) : (
+            filteredMenuItems.map(item => (
+                <MenuItemCard key={item.id} item={item} variant="compact" />
+            ))
+        )}
       </div>
     </>
   );

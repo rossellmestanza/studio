@@ -14,16 +14,24 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import { Menu, User, LogOut } from 'lucide-react';
-import { useUser, useAuth } from '@/firebase';
+import { useUser, useAuth, useFirestore, useMemoFirebase, useDoc } from '@/firebase';
 import { signOut } from 'firebase/auth';
+import type { BusinessInfo } from '@/lib/types';
+import { doc } from 'firebase/firestore';
+import { Skeleton } from './ui/skeleton';
 
 
 export default function Header() {
   const pathname = usePathname();
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
+  const firestore = useFirestore();
+
+  const businessInfoDoc = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'businessInfo') : null, [firestore]);
+  const { data: businessInfo, isLoading: isInfoLoading } = useDoc<BusinessInfo>(businessInfoDoc);
 
   const handleSignOut = () => {
+    if (!auth) return;
     signOut(auth);
   };
 
@@ -37,7 +45,9 @@ export default function Header() {
     <header className="sticky top-0 z-40 w-full border-b border-gray-800 bg-black text-white">
       <div className="container mx-auto flex h-20 items-center justify-between px-4">
         <Link href="/" className="flex items-center space-x-2">
-          <span className="text-4xl font-headline" style={{fontFamily: "'Ms Madi', cursive"}}>Fly</span>
+          {isInfoLoading ? <Skeleton className="h-10 w-20" /> : (
+            <span className="text-4xl font-headline" style={{fontFamily: "'Ms Madi', cursive"}}>{businessInfo?.businessName || 'Fly'}</span>
+          )}
         </Link>
         <nav className="hidden md:flex items-center space-x-6">
           {navLinks.map((link) => (

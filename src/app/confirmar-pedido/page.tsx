@@ -9,13 +9,23 @@ import { useCart } from '@/context/CartContext';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Separator } from '@/components/ui/separator';
+import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
+import type { BusinessInfo } from '@/lib/types';
+import { doc } from 'firebase/firestore';
 
 export default function ConfirmarPedidoPage() {
-  const { cartItems, cartTotal, customerData } = useCart();
+  const { cartItems, cartTotal, customerData, clearCart } = useCart();
   const router = useRouter();
+  const firestore = useFirestore();
+
+  const businessInfoDoc = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'businessInfo') : null, [firestore]);
+  const { data: businessInfo } = useDoc<BusinessInfo>(businessInfoDoc);
 
   const handleConfirmOrder = () => {
-    if (!customerData) return;
+    if (!customerData || !businessInfo?.footerWhatsapp) {
+        alert('No se ha configurado un número de WhatsApp para pedidos.');
+        return;
+    }
 
     let deliveryData = '';
     switch (customerData.orderType) {
@@ -47,9 +57,14 @@ export default function ConfirmarPedidoPage() {
         break;
     }
 
-    const itemsText = cartItems.map(item => 
-      `${item.quantity} x ${item.name} - S/ ${(item.price * item.quantity).toFixed(2)}`
-    ).join('\n');
+    const itemsText = cartItems.map(item => {
+      let itemLine = `${item.quantity} x ${item.name} - S/ ${(item.price * item.quantity).toFixed(2)}`;
+      if (item.selectedExtras && item.selectedExtras.length > 0) {
+        const extrasText = item.selectedExtras.map(e => e.name).join(', ');
+        itemLine += `\n  (Extras: ${extrasText})`;
+      }
+      return itemLine;
+    }).join('\n');
 
     const totalText = `*Total: S/ ${cartTotal.toFixed(2)}*`;
 
@@ -64,10 +79,14 @@ ${itemsText}
 ${totalText}
     `;
 
-    const whatsappNumber = "+51973282798";
+    const whatsappNumber = businessInfo.footerWhatsapp.replace(/\D/g, '');
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
     
     window.open(whatsappUrl, '_blank');
+    
+    // We can't be sure the user sent the message, but for this app's flow we assume they did.
+    // So we clear the cart and redirect.
+    clearCart();
     router.push('/confirmacion');
   };
 
@@ -160,6 +179,9 @@ ${totalText}
                                 <div>
                                     <p className="font-semibold">{item.name}</p>
                                     <p className="text-sm text-muted-foreground">Cantidad: {item.quantity}</p>
+                                    {item.selectedExtras && item.selectedExtras.length > 0 && (
+                                      <p className="text-xs text-muted-foreground mt-1">Extras: {item.selectedExtras.map(e => e.name).join(', ')}</p>
+                                    )}
                                 </div>
                             </div>
                             <p className="font-semibold text-primary">S/ {item.price.toFixed(2)}</p>
@@ -174,7 +196,7 @@ ${totalText}
             </Card>
 
             <div className="text-center space-y-2">
-                 <Button onClick={handleConfirmOrder} className="w-full bg-[#841515] hover:bg-[#6a1010] text-white text-lg py-6">
+                 <Button onClick={handleConfirmOrder} className="w-full bg-[#841515] hover:bg-[#6a1010] text-white text-lg py-6" disabled={!businessInfo}>
                     Confirmar Pedido por WhatsApp
                 </Button>
                 <p className="text-xs text-muted-foreground">
