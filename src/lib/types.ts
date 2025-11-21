@@ -1,3 +1,4 @@
+
 import type { LucideIcon } from 'lucide-react';
 
 export interface MenuItemExtra {
@@ -11,7 +12,7 @@ export interface MenuItem {
   description: string;
   price: number;
   originalPrice?: number;
-  image: string;
+  image: string; // Can be a URL or a data URI
   imageHint: string;
   category: string;
   extras?: MenuItemExtra[];
@@ -26,4 +27,39 @@ export interface CartItem extends MenuItem {
   quantity: number;
   notes?: string;
   selectedExtras: MenuItemExtra[];
+}
+
+export interface Order {
+  id: string;
+  customer: string;
+  date: string;
+  total: number;
+  status: 'Entregado' | 'Pendiente' | 'En preparación';
+}
+
+export interface Banner {
+    id: string;
+    title: string;
+    description: string;
+    buttonText: string;
+    imageUrl: string; // Can be a URL or a data URI
+    href: string;
+}
+
+export interface Location {
+    id: string;
+    name: string;
+    address: string;
+    phone: string;
+    mapUrl: string;
+}
+
+export interface BusinessInfo {
+    id?: string;
+    businessName: string;
+    logoUrl: string;
+    footerAddress: string;
+    footerHours: string;
+    footerPhone: string;
+    footerWhatsapp: string;
 }

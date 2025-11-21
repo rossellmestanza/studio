@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
@@ -25,8 +25,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Home, ShoppingBag, List, PlusCircle, MoreHorizontal, Trash2, Edit, ClipboardList, DollarSign, Store, Upload, Clock, Phone, MapPin, Menu as MenuIcon, LogOut, Image as ImageIcon, MessageCircle } from 'lucide-react';
-import { menuItems, categories } from '@/lib/menu-data';
-import type { MenuItem, MenuItemExtra } from '@/lib/types';
+import type { MenuItem, MenuItemExtra, Order, Banner, Location, MenuCategory, BusinessInfo } from '@/lib/types';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,53 +49,20 @@ import {
 } from 'recharts';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import Link from 'next/link';
-import { useAuth } from '@/firebase';
+import { useAuth, useUser, useFirestore, useCollection, useDoc, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking, useMemoFirebase } from '@/firebase';
+import { collection, doc, setDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Separator } from '@/components/ui/separator';
 
-
-// Mock data for orders
-const orders = [
-  { id: 'ORD001', customer: 'Juan Perez', date: '2024-05-20', total: 75.50, status: 'Entregado' },
-  { id: 'ORD002', customer: 'Maria Garcia', date: '2024-05-20', total: 45.00, status: 'Pendiente' },
-  { id: 'ORD003', customer: 'Carlos Sanchez', date: '2024-05-19', total: 120.00, status: 'En preparación' },
-  { id: 'ORD004', customer: 'Ana Lopez', date: '2024-05-19', total: 35.50, status: 'Entregado' },
-];
-
-const monthlyRevenue = [
+const monthlyRevenueData = [
     { month: 'Enero', revenue: 1200 },
     { month: 'Febrero', revenue: 1800 },
     { month: 'Marzo', revenue: 1500 },
     { month: 'Abril', revenue: 2100 },
-    { month: 'Mayo', revenue: orders.filter(o => o.status === 'Entregado').reduce((sum, o) => sum + o.total, 0) },
+    { month: 'Mayo', revenue: 1900 },
     { month: 'Junio', revenue: 2300 },
-];
-
-const locations = [
-  { id: 'san-isidro', name: 'Local San Isidro', address: 'Av. Javier Prado Este 456, San Isidro', phone: '+51 973 282 798', mapUrl: 'https://maps.app.goo.gl/...' },
-  { id: 'miraflores', name: 'Local Miraflores', address: 'Av. Larco 789, Miraflores', phone: '+51 949 992 148', mapUrl: 'https://maps.app.goo.gl/...' },
-  { id: 'surco', name: 'Local Surco', address: 'Av. Primavera 321, Surco', phone: '+51 949 992 149', mapUrl: 'https://maps.app.goo.gl/...' },
-];
-
-const heroItems = [
-  {
-    id: "hero-delivery",
-    title: "DELIVERY GRATIS",
-    description: "Todo el día en compras mayores a S/. 30",
-    buttonText: "¡ORDENA YA!",
-    imageUrl: "https://static.wixstatic.com/media/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png/v1/fill/w_568,h_320,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png",
-    href: "/carta",
-  },
-  {
-    id: "hero-pollo-brasa",
-    title: "EL FAVORITO DE TODOS",
-    description: "Nuestro jugoso Pollo a la Brasa con papas y ensalada.",
-    buttonText: "VER PROMOCIONES",
-    imageUrl: "https://cdn.cuponidad.pe/images/Deals/polloalalenalinceofertas.jpg",
-    href: "/carta",
-  },
 ];
 
 
@@ -104,26 +70,53 @@ export default function AdminDashboard() {
   const [activeView, setActiveView] = useState('dashboard');
   const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
   const [isBannerDialogOpen, setIsBannerDialogOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<MenuItem | null>(null);
+  const [selectedBanner, setSelectedBanner] = useState<Banner | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<MenuCategory | null>(null);
+  
   const auth = useAuth();
   const router = useRouter();
 
   const handleSignOut = async () => {
-    await signOut(auth);
-    router.push('/auth');
+    if (auth) {
+        await signOut(auth);
+        router.push('/auth');
+    }
   };
 
+  const handleEditProduct = (product: MenuItem) => {
+    setSelectedProduct(product);
+    setIsProductDialogOpen(true);
+  };
+  
+  const handleAddNewProduct = () => {
+    setSelectedProduct(null);
+    setIsProductDialogOpen(true);
+  }
+
+  const handleEditBanner = (banner: Banner) => {
+    setSelectedBanner(banner);
+    setIsBannerDialogOpen(true);
+  };
+  
+  const handleAddNewBanner = () => {
+    setSelectedBanner(null);
+    setIsBannerDialogOpen(true);
+  }
+  
   const renderContent = () => {
     switch (activeView) {
       case 'products':
-        return <ProductManagement setDialogOpen={setIsProductDialogOpen} />;
+        return <ProductManagement setDialogOpen={setIsProductDialogOpen} onEdit={handleEditProduct} />;
       case 'categories':
-        return <CategoryManagement />;
+        return <CategoryManagement setSelectedCategory={setSelectedCategory} />;
       case 'orders':
         return <OrderManagement />;
       case 'banners':
-        return <BannerManagement setDialogOpen={setIsBannerDialogOpen} />;
+        return <BannerManagement setDialogOpen={setIsBannerDialogOpen} onEdit={handleEditBanner} />;
       case 'local':
-        return <LocalManagement />;
+        return <LocalManagement setSelectedLocation={setSelectedLocation} />;
       case 'dashboard':
       default:
         return <DashboardOverview />;
@@ -188,25 +181,25 @@ export default function AdminDashboard() {
           
            <div className="flex items-center gap-4">
               {activeView === 'products' && (
-                <Dialog open={isProductDialogOpen} onOpenChange={setIsProductDialogOpen}>
+                <Dialog open={isProductDialogOpen} onOpenChange={(isOpen) => { setIsProductDialogOpen(isOpen); if (!isOpen) setSelectedProduct(null); }}>
                   <DialogTrigger asChild>
-                    <Button size="sm" className="gap-1">
+                    <Button size="sm" className="gap-1" onClick={handleAddNewProduct}>
                       <PlusCircle className="h-4 w-4" />
                       Añadir Producto
                     </Button>
                   </DialogTrigger>
-                  <ProductDialog setDialogOpen={setIsProductDialogOpen} />
+                  <ProductDialog setDialogOpen={setIsProductDialogOpen} product={selectedProduct} />
                 </Dialog>
               )}
                {activeView === 'banners' && (
-                <Dialog open={isBannerDialogOpen} onOpenChange={setIsBannerDialogOpen}>
+                <Dialog open={isBannerDialogOpen} onOpenChange={(isOpen) => { setIsBannerDialogOpen(isOpen); if (!isOpen) setSelectedBanner(null); }}>
                   <DialogTrigger asChild>
-                    <Button size="sm" className="gap-1">
+                    <Button size="sm" className="gap-1" onClick={handleAddNewBanner}>
                       <PlusCircle className="h-4 w-4" />
                       Añadir
                     </Button>
                   </DialogTrigger>
-                  <BannerDialog setDialogOpen={setIsBannerDialogOpen} />
+                  <BannerDialog setDialogOpen={setIsBannerDialogOpen} banner={selectedBanner} />
                 </Dialog>
               )}
                <Button variant="outline" size="icon" onClick={handleSignOut} aria-label="Cerrar Sesión">
@@ -221,7 +214,36 @@ export default function AdminDashboard() {
 }
 
 function DashboardOverview() {
-    const totalRevenue = orders.filter(o => o.status === 'Entregado').reduce((sum, o) => sum + o.total, 0);
+    const firestore = useFirestore();
+    const ordersQuery = useMemoFirebase(() => firestore ? collection(firestore, 'orders') : null, [firestore]);
+    const productsQuery = useMemoFirebase(() => firestore ? collection(firestore, 'products') : null, [firestore]);
+    const categoriesQuery = useMemoFirebase(() => firestore ? collection(firestore, 'categories') : null, [firestore]);
+
+    const { data: orders, isLoading: ordersLoading } = useCollection<Order>(ordersQuery);
+    const { data: products, isLoading: productsLoading } = useCollection<MenuItem>(productsQuery);
+    const { data: categories, isLoading: categoriesLoading } = useCollection<MenuCategory>(categoriesQuery);
+
+    const totalRevenue = useMemo(() => {
+        return orders?.filter(o => o.status === 'Entregado').reduce((sum, o) => sum + o.total, 0) || 0;
+    }, [orders]);
+
+    const monthlyRevenue = useMemo(() => {
+        const currentMonthRevenue = { 
+            month: 'Mayo', // This should be dynamic in a real app
+            revenue: totalRevenue 
+        };
+        const existingMonthIndex = monthlyRevenueData.findIndex(d => d.month === currentMonthRevenue.month);
+        if (existingMonthIndex !== -1) {
+            const updatedData = [...monthlyRevenueData];
+            updatedData[existingMonthIndex] = currentMonthRevenue;
+            return updatedData;
+        }
+        return [...monthlyRevenueData, currentMonthRevenue];
+    }, [totalRevenue]);
+
+    if (ordersLoading || productsLoading || categoriesLoading) {
+        return <div>Cargando dashboard...</div>;
+    }
 
     return (
         <div className="grid gap-6">
@@ -242,7 +264,7 @@ function DashboardOverview() {
                     <CardDescription>Número total de pedidos recibidos.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                    <p className="text-4xl font-bold">{orders.length}</p>
+                    <p className="text-4xl font-bold">{orders?.length ?? 0}</p>
                     </CardContent>
                 </Card>
                 <Card>
@@ -251,7 +273,7 @@ function DashboardOverview() {
                     <CardDescription>Número total de productos en el menú.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                    <p className="text-4xl font-bold">{menuItems.length}</p>
+                    <p className="text-4xl font-bold">{products?.length ?? 0}</p>
                     </CardContent>
                 </Card>
                 <Card>
@@ -260,7 +282,7 @@ function DashboardOverview() {
                     <CardDescription>Número total de categorías de productos.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                    <p className="text-4xl font-bold">{categories.length}</p>
+                    <p className="text-4xl font-bold">{categories?.length ?? 0}</p>
                     </CardContent>
                 </Card>
             </div>
@@ -292,6 +314,10 @@ function DashboardOverview() {
 }
 
 function OrderManagement() {
+  const firestore = useFirestore();
+  const ordersQuery = useMemoFirebase(() => firestore ? collection(firestore, 'orders') : null, [firestore]);
+  const { data: orders, isLoading } = useCollection<Order>(ordersQuery);
+
   const getStatusVariant = (status: string) => {
     switch (status) {
       case 'Entregado': return 'default';
@@ -300,8 +326,15 @@ function OrderManagement() {
       default: return 'outline';
     }
   };
+  
+  const handleStatusChange = (orderId: string, status: Order['status']) => {
+      if (!firestore) return;
+      const orderRef = doc(firestore, 'orders', orderId);
+      updateDocumentNonBlocking(orderRef, { status });
+  };
 
-  const ActionMenu = () => (
+
+  const ActionMenu = ({ order }: { order: Order }) => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="h-8 w-8 p-0">
@@ -315,15 +348,17 @@ function OrderManagement() {
           <DropdownMenuSubTrigger>Actualizar estado</DropdownMenuSubTrigger>
           <DropdownMenuPortal>
             <DropdownMenuSubContent>
-              <DropdownMenuItem>Pendiente</DropdownMenuItem>
-              <DropdownMenuItem>En preparación</DropdownMenuItem>
-              <DropdownMenuItem>Entregado</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleStatusChange(order.id, 'Pendiente')}>Pendiente</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleStatusChange(order.id, 'En preparación')}>En preparación</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleStatusChange(order.id, 'Entregado')}>Entregado</DropdownMenuItem>
             </DropdownMenuSubContent>
           </DropdownMenuPortal>
         </DropdownMenuSub>
       </DropdownMenuContent>
     </DropdownMenu>
   );
+
+  if (isLoading) return <div>Cargando pedidos...</div>
 
   return (
     <Card>
@@ -346,9 +381,9 @@ function OrderManagement() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {orders.map((order) => (
+              {orders && orders.map((order) => (
                 <TableRow key={order.id}>
-                  <TableCell className="font-medium">{order.id}</TableCell>
+                  <TableCell className="font-medium">{order.id.substring(0, 6)}...</TableCell>
                   <TableCell>{order.customer}</TableCell>
                   <TableCell>{order.date}</TableCell>
                   <TableCell>S/ {order.total.toFixed(2)}</TableCell>
@@ -356,7 +391,7 @@ function OrderManagement() {
                     <Badge variant={getStatusVariant(order.status) as any}>{order.status}</Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <ActionMenu />
+                    <ActionMenu order={order} />
                   </TableCell>
                 </TableRow>
               ))}
@@ -366,14 +401,14 @@ function OrderManagement() {
 
         {/* Vista de tarjetas para pantallas pequeñas */}
         <div className="grid gap-4 md:hidden">
-          {orders.map((order) => (
+          {orders && orders.map((order) => (
             <Card key={order.id} className="p-4">
               <div className="flex justify-between items-start">
                 <div>
                   <p className="font-bold">{order.customer}</p>
-                  <p className="text-sm text-muted-foreground">{order.id}</p>
+                  <p className="text-sm text-muted-foreground">#{order.id.substring(0, 6)}</p>
                 </div>
-                <ActionMenu />
+                <ActionMenu order={order} />
               </div>
               <Separator className="my-3" />
               <div className="grid grid-cols-2 gap-2 text-sm">
@@ -401,9 +436,16 @@ function OrderManagement() {
 }
 
 
-function ProductManagement({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) => void; }) {
+function ProductManagement({ setDialogOpen, onEdit }: { setDialogOpen: (isOpen: boolean) => void; onEdit: (product: MenuItem) => void; }) {
+  const firestore = useFirestore();
+  const productsQuery = useMemoFirebase(() => firestore ? collection(firestore, 'products') : null, [firestore]);
+  const { data: products, isLoading } = useCollection<MenuItem>(productsQuery);
+
   const handleDelete = (id: string) => {
-    alert(`(Simulado) Producto con ID: ${id} eliminado.`);
+    if (!firestore) return;
+    if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
+        deleteDocumentNonBlocking(doc(firestore, 'products', id));
+    }
   };
 
   const ActionMenu = ({ item }: { item: MenuItem }) => (
@@ -415,7 +457,7 @@ function ProductManagement({ setDialogOpen }: { setDialogOpen: (isOpen: boolean)
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setDialogOpen(true)}>
+        <DropdownMenuItem onClick={() => onEdit(item)}>
           <Edit className="mr-2 h-4 w-4" />
           Editar
         </DropdownMenuItem>
@@ -426,6 +468,8 @@ function ProductManagement({ setDialogOpen }: { setDialogOpen: (isOpen: boolean)
       </DropdownMenuContent>
     </DropdownMenu>
   );
+
+  if (isLoading) return <div>Cargando productos...</div>
 
   return (
     <Card>
@@ -448,7 +492,7 @@ function ProductManagement({ setDialogOpen }: { setDialogOpen: (isOpen: boolean)
               </TableRow>
             </TableHeader>
             <TableBody>
-              {menuItems.map((item) => (
+              {products && products.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell>
                     <Image
@@ -474,7 +518,7 @@ function ProductManagement({ setDialogOpen }: { setDialogOpen: (isOpen: boolean)
 
         {/* Vista de tarjetas para pantallas pequeñas */}
         <div className="grid gap-4 md:hidden">
-          {menuItems.map((item) => (
+          {products && products.map((item) => (
             <Card key={item.id} className="p-4">
               <div className="flex gap-4">
                 <Image
@@ -505,10 +549,27 @@ function ProductManagement({ setDialogOpen }: { setDialogOpen: (isOpen: boolean)
 }
 
 
-function ProductDialog({ setDialogOpen, product }: { setDialogOpen: (isOpen: boolean) => void; product?: MenuItem }) {
+function ProductDialog({ setDialogOpen, product }: { setDialogOpen: (isOpen: boolean) => void; product?: MenuItem | null }) {
+  const firestore = useFirestore();
+  const categoriesQuery = useMemoFirebase(() => firestore ? collection(firestore, 'categories') : null, [firestore]);
+  const { data: categories, isLoading: categoriesLoading } = useCollection<MenuCategory>(categoriesQuery);
+  
+  const [formData, setFormData] = useState<Partial<MenuItem>>(product || {});
   const [extras, setExtras] = useState<MenuItemExtra[]>(product?.extras || []);
   const [imagePreview, setImagePreview] = useState<string | null>(product?.image || null);
   const [isUploading, setIsUploading] = useState(false);
+
+  useEffect(() => {
+    if (product) {
+      setFormData(product);
+      setExtras(product.extras || []);
+      setImagePreview(product.image || null);
+    } else {
+      setFormData({});
+      setExtras([]);
+      setImagePreview(null);
+    }
+  }, [product]);
 
   const handleAddExtra = () => {
     setExtras([...extras, { name: '', price: 0 }]);
@@ -535,17 +596,47 @@ function ProductDialog({ setDialogOpen, product }: { setDialogOpen: (isOpen: boo
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
+        setFormData(prev => ({...prev, image: reader.result as string }));
         setIsUploading(false);
-        // In a real app, you would start the upload to a storage service here
       };
       reader.readAsDataURL(file);
     }
   };
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+      const { id, value } = e.target;
+      setFormData(prev => ({...prev, [id]: value }));
+  };
+
+  const handleSelectChange = (value: string) => {
+    setFormData(prev => ({...prev, category: value }));
+  }
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // In a real app, you would handle form submission to an API
-    alert('(Simulado) Producto guardado con éxito.');
+    if (!firestore) return;
+
+    const productData: Omit<MenuItem, 'id'> = {
+        name: formData.name || '',
+        description: formData.description || '',
+        price: parseFloat(String(formData.price)) || 0,
+        originalPrice: parseFloat(String(formData.originalPrice)) || undefined,
+        category: formData.category || '',
+        image: formData.image || '',
+        imageHint: formData.imageHint || '',
+        extras: extras,
+    };
+
+    if (product?.id) {
+        // Update existing product
+        const productRef = doc(firestore, 'products', product.id);
+        updateDocumentNonBlocking(productRef, productData);
+    } else {
+        // Add new product
+        const productsCollection = collection(firestore, 'products');
+        addDocumentNonBlocking(productsCollection, productData);
+    }
+
     setDialogOpen(false);
   };
   
@@ -557,33 +648,38 @@ function ProductDialog({ setDialogOpen, product }: { setDialogOpen: (isOpen: boo
       <form onSubmit={handleSubmit} className="grid gap-4 py-4 max-h-[80vh] overflow-y-auto pr-6">
         <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="name" className="text-right">Nombre</Label>
-          <Input id="name" defaultValue={product?.name} className="col-span-3" />
+          <Input id="name" value={formData.name || ''} onChange={handleChange} className="col-span-3" />
         </div>
         <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="description" className="text-right">Descripción</Label>
-          <Textarea id="description" defaultValue={product?.description} className="col-span-3" />
+          <Textarea id="description" value={formData.description || ''} onChange={handleChange} className="col-span-3" />
         </div>
          <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="category" className="text-right">Categoría</Label>
-          <Select defaultValue={product?.category}>
+          <Select value={formData.category} onValueChange={handleSelectChange}>
             <SelectTrigger className="col-span-3">
               <SelectValue placeholder="Selecciona una categoría" />
             </SelectTrigger>
             <SelectContent>
-              {categories.map(cat => (
-                <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+              {categoriesLoading ? <SelectItem value="loading" disabled>Cargando...</SelectItem> :
+              categories?.map(cat => (
+                <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
         <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="price" className="text-right">Precio</Label>
-          <Input id="price" type="number" defaultValue={product?.price} className="col-span-3" />
+          <Input id="price" type="number" value={formData.price || ''} onChange={handleChange} className="col-span-3" />
+        </div>
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="originalPrice" className="text-right">Precio Original</Label>
+          <Input id="originalPrice" type="number" value={formData.originalPrice || ''} onChange={handleChange} className="col-span-3" placeholder="(Opcional)" />
         </div>
         <div className="grid grid-cols-4 items-start gap-4">
           <Label htmlFor="image" className="text-right pt-2">Imagen</Label>
           <div className="col-span-3 space-y-2">
-            <Input id="image" type="file" accept="image/*" onChange={handleImageChange} className="col-span-3" />
+            <Input id="image-upload" type="file" accept="image/*" onChange={handleImageChange} className="col-span-3" />
              {isUploading && <p className="text-sm text-muted-foreground">Cargando...</p>}
              {imagePreview && !isUploading && (
                 <div className="relative w-32 h-32 mt-2 rounded-md overflow-hidden">
@@ -639,15 +735,31 @@ function ProductDialog({ setDialogOpen, product }: { setDialogOpen: (isOpen: boo
   );
 }
 
-function CategoryManagement() {
+function CategoryManagement({ setSelectedCategory }: { setSelectedCategory: (category: MenuCategory | null) => void; }) {
+  const firestore = useFirestore();
+  const categoriesQuery = useMemoFirebase(() => firestore ? collection(firestore, 'categories') : null, [firestore]);
+  const { data: categories, isLoading } = useCollection<MenuCategory>(categoriesQuery);
+  
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
 
-  // Mock function
   const handleDelete = (id: string) => {
-    alert(`(Simulado) Categoría con ID: ${id} eliminada.`);
+    if (!firestore) return;
+    if (confirm('¿Estás seguro de que quieres eliminar esta categoría?')) {
+        deleteDocumentNonBlocking(doc(firestore, 'categories', id));
+    }
   };
 
-  const ActionMenu = ({ catId }: { catId: string }) => (
+  const handleEdit = (category: MenuCategory) => {
+      setSelectedCategory(category);
+      setIsCategoryDialogOpen(true);
+  }
+
+  const handleAddNew = () => {
+      setSelectedCategory(null);
+      setIsCategoryDialogOpen(true);
+  }
+
+  const ActionMenu = ({ cat }: { cat: MenuCategory }) => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="h-8 w-8 p-0">
@@ -655,17 +767,19 @@ function CategoryManagement() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setIsCategoryDialogOpen(true)}>
+        <DropdownMenuItem onClick={() => handleEdit(cat)}>
           <Edit className="mr-2 h-4 w-4" />
           Editar
         </DropdownMenuItem>
-        <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(catId)}>
+        <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(cat.id)}>
           <Trash2 className="mr-2 h-4 w-4" />
           Eliminar
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
+
+  if (isLoading) return <div>Cargando categorías...</div>
 
   return (
     <Card>
@@ -674,14 +788,14 @@ function CategoryManagement() {
           <CardTitle>Categorías</CardTitle>
           <CardDescription>Gestiona las categorías de tu menú.</CardDescription>
         </div>
-         <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
+         <Dialog open={isCategoryDialogOpen} onOpenChange={(isOpen) => { setIsCategoryDialogOpen(isOpen); if (!isOpen) setSelectedCategory(null); }}>
           <DialogTrigger asChild>
-            <Button size="sm" className="gap-1">
+            <Button size="sm" className="gap-1" onClick={handleAddNew}>
               <PlusCircle className="h-4 w-4" />
               Añadir Categoría
             </Button>
           </DialogTrigger>
-          <CategoryDialog setDialogOpen={setIsCategoryDialogOpen} />
+          <CategoryDialog setDialogOpen={setIsCategoryDialogOpen} category={null}/>
         </Dialog>
       </CardHeader>
       <CardContent>
@@ -695,11 +809,11 @@ function CategoryManagement() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {categories.map((cat) => (
+              {categories && categories.map((cat) => (
                 <TableRow key={cat.id}>
                   <TableCell className="font-medium">{cat.name}</TableCell>
                   <TableCell className="text-right">
-                    <ActionMenu catId={cat.id} />
+                    <ActionMenu cat={cat} />
                   </TableCell>
                 </TableRow>
               ))}
@@ -709,11 +823,11 @@ function CategoryManagement() {
         
         {/* Vista de tarjetas para pantallas pequeñas */}
         <div className="grid gap-4 md:hidden">
-            {categories.map((cat) => (
+            {categories && categories.map((cat) => (
                 <Card key={cat.id} className="p-4">
                     <div className="flex justify-between items-center">
                         <p className="font-bold">{cat.name}</p>
-                         <ActionMenu catId={cat.id} />
+                         <ActionMenu cat={cat} />
                     </div>
                 </Card>
             ))}
@@ -724,22 +838,34 @@ function CategoryManagement() {
   );
 }
 
-function CategoryDialog({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) => void; }) {
+function CategoryDialog({ setDialogOpen, category }: { setDialogOpen: (isOpen: boolean) => void; category?: MenuCategory | null }) {
+  const firestore = useFirestore();
+  const [name, setName] = useState(category?.name || '');
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    alert('(Simulado) Categoría guardada.');
+    if (!firestore) return;
+
+    const categoryData = { name };
+
+    if (category?.id) {
+        updateDocumentNonBlocking(doc(firestore, 'categories', category.id), categoryData);
+    } else {
+        addDocumentNonBlocking(collection(firestore, 'categories'), categoryData);
+    }
+
     setDialogOpen(false);
   };
   
   return (
      <DialogContent className="sm:max-w-[425px]">
       <DialogHeader>
-        <DialogTitle>Añadir/Editar Categoría</DialogTitle>
+        <DialogTitle>{category ? 'Editar' : 'Añadir'} Categoría</DialogTitle>
       </DialogHeader>
       <form onSubmit={handleSubmit} className="grid gap-4 py-4">
         <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="name" className="text-right">Nombre</Label>
-          <Input id="name" placeholder="Ej: Bebidas" className="col-span-3" />
+          <Input id="name" placeholder="Ej: Bebidas" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" />
         </div>
         <DialogFooter>
           <Button type="submit">Guardar</Button>
@@ -749,12 +875,19 @@ function CategoryDialog({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) =>
   );
 }
 
-function BannerManagement({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) => void; }) {
+function BannerManagement({ setDialogOpen, onEdit }: { setDialogOpen: (isOpen: boolean) => void; onEdit: (banner: Banner) => void; }) {
+  const firestore = useFirestore();
+  const bannersQuery = useMemoFirebase(() => firestore ? collection(firestore, 'banners') : null, [firestore]);
+  const { data: banners, isLoading } = useCollection<Banner>(bannersQuery);
+  
   const handleDelete = (id: string) => {
-    alert(`(Simulado) Banner con ID: ${id} eliminado.`);
+    if (!firestore) return;
+    if (confirm('¿Estás seguro de que quieres eliminar este banner?')) {
+        deleteDocumentNonBlocking(doc(firestore, 'banners', id));
+    }
   };
 
-  const ActionMenu = ({ item }: { item: typeof heroItems[0] }) => (
+  const ActionMenu = ({ item }: { item: Banner }) => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="h-8 w-8 p-0">
@@ -762,7 +895,7 @@ function BannerManagement({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) 
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setDialogOpen(true)}>
+        <DropdownMenuItem onClick={() => onEdit(item)}>
           <Edit className="mr-2 h-4 w-4" /> Editar
         </DropdownMenuItem>
         <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(item.id)}>
@@ -771,6 +904,8 @@ function BannerManagement({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) 
       </DropdownMenuContent>
     </DropdownMenu>
   );
+
+  if (isLoading) return <div>Cargando banners...</div>
 
   return (
     <Card>
@@ -791,7 +926,7 @@ function BannerManagement({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) 
               </TableRow>
             </TableHeader>
             <TableBody>
-              {heroItems.map((item) => (
+              {banners && banners.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell>
                     <Image
@@ -815,7 +950,7 @@ function BannerManagement({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) 
 
         {/* Vista de tarjetas para pantallas pequeñas */}
         <div className="grid gap-4 md:hidden">
-          {heroItems.map((item) => (
+          {banners && banners.map((item) => (
             <Card key={item.id} className="overflow-hidden">
               <div className="relative h-32 w-full">
                 <Image
@@ -843,29 +978,63 @@ function BannerManagement({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) 
 }
 
 
-function BannerDialog({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) => void; }) {
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+function BannerDialog({ setDialogOpen, banner }: { setDialogOpen: (isOpen: boolean) => void; banner?: Banner | null }) {
+  const firestore = useFirestore();
+  const [formData, setFormData] = useState<Partial<Banner>>(banner || {});
+  const [imagePreview, setImagePreview] = useState<string | null>(banner?.imageUrl || null);
   const [isUploading, setIsUploading] = useState(false);
+  
+  useEffect(() => {
+    if (banner) {
+        setFormData(banner);
+        setImagePreview(banner.imageUrl);
+    } else {
+        setFormData({});
+        setImagePreview(null);
+    }
+  }, [banner]);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    alert('(Simulado) Banner guardado.');
-    setDialogOpen(false);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const { id, value } = e.target;
+      setFormData(prev => ({ ...prev, [id.replace('banner-','')]: value }));
   };
-   
+
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       setIsUploading(true);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result as string);
+        const result = reader.result as string;
+        setImagePreview(result);
+        setFormData(prev => ({...prev, imageUrl: result }));
         setIsUploading(false);
       };
       reader.readAsDataURL(file);
     }
   };
-  
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!firestore) return;
+
+    const bannerData: Omit<Banner, 'id'> = {
+        title: formData.title || '',
+        description: formData.description || '',
+        buttonText: formData.buttonText || '',
+        imageUrl: formData.imageUrl || '',
+        href: formData.href || '',
+    };
+    
+    if (banner?.id) {
+        updateDocumentNonBlocking(doc(firestore, 'banners', banner.id), bannerData);
+    } else {
+        addDocumentNonBlocking(collection(firestore, 'banners'), bannerData);
+    }
+
+    setDialogOpen(false);
+  };
+   
   return (
      <DialogContent className="sm:max-w-xl">
       <DialogHeader>
@@ -874,16 +1043,16 @@ function BannerDialog({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) => v
       <form onSubmit={handleSubmit} className="grid gap-4 py-4 max-h-[80vh] overflow-y-auto pr-6">
         <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="banner-title" className="text-right">Título</Label>
-          <Input id="banner-title" placeholder="Ej: DELIVERY GRATIS" className="col-span-3" />
+          <Input id="banner-title" value={formData.title || ''} onChange={handleChange} placeholder="Ej: DELIVERY GRATIS" className="col-span-3" />
         </div>
         <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="banner-description" className="text-right">Descripción</Label>
-          <Textarea id="banner-description" placeholder="Ej: En compras mayores a S/. 30" className="col-span-3" />
+          <Textarea id="banner-description" value={formData.description || ''} onChange={handleChange} placeholder="Ej: En compras mayores a S/. 30" className="col-span-3" />
         </div>
         <div className="grid grid-cols-4 items-start gap-4">
-          <Label htmlFor="image" className="text-right pt-2">Imagen</Label>
+          <Label htmlFor="image-upload" className="text-right pt-2">Imagen</Label>
           <div className="col-span-3 space-y-2">
-            <Input id="image" type="file" accept="image/*" onChange={handleImageChange} className="col-span-3" />
+            <Input id="image-upload" type="file" accept="image/*" onChange={handleImageChange} className="col-span-3" />
              {isUploading && <p className="text-sm text-muted-foreground">Cargando...</p>}
              {imagePreview && !isUploading && (
                 <div className="relative w-full aspect-video mt-2 rounded-md overflow-hidden">
@@ -893,12 +1062,12 @@ function BannerDialog({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) => v
           </div>
         </div>
         <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="banner-button-text" className="text-right">Texto del Botón</Label>
-          <Input id="banner-button-text" placeholder="Ej: ¡ORDENA YA!" className="col-span-3" />
+          <Label htmlFor="banner-buttonText" className="text-right">Texto del Botón</Label>
+          <Input id="banner-buttonText" value={formData.buttonText || ''} onChange={handleChange} placeholder="Ej: ¡ORDENA YA!" className="col-span-3" />
         </div>
         <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="banner-href" className="text-right">Enlace</Label>
-          <Input id="banner-href" placeholder="Ej: /carta" className="col-span-3" />
+          <Input id="banner-href" value={formData.href || ''} onChange={handleChange} placeholder="Ej: /carta" className="col-span-3" />
         </div>
         <DialogFooter>
           <Button type="submit">Guardar</Button>
@@ -908,28 +1077,84 @@ function BannerDialog({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) => v
   );
 }
 
-function LocalManagement() {
+function LocalManagement({ setSelectedLocation }: { setSelectedLocation: (location: Location | null) => void; }) {
+  const firestore = useFirestore();
+  const businessInfoDoc = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'businessInfo') : null, [firestore]);
+  const { data: businessInfo, isLoading: infoLoading } = useDoc<BusinessInfo>(businessInfoDoc);
+  const locationsQuery = useMemoFirebase(() => firestore ? collection(firestore, 'locations') : null, [firestore]);
+  const { data: locations, isLoading: locationsLoading } = useCollection<Location>(locationsQuery);
+
   const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [infoFormData, setInfoFormData] = useState<Partial<BusinessInfo>>({});
   const logoInputRef = React.useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+      if (businessInfo) {
+          setInfoFormData(businessInfo);
+          setLogoPreview(businessInfo.logoUrl);
+      }
+  }, [businessInfo]);
 
-  const handleDelete = (id: string) => {
-    alert(`(Simulado) Local con ID: ${id} eliminado.`);
+  const handleDeleteLocation = (id: string) => {
+    if (!firestore) return;
+    if (confirm('¿Estás seguro de que quieres eliminar este local?')) {
+        deleteDocumentNonBlocking(doc(firestore, 'locations', id));
+    }
   };
+  
+  const handleEditLocation = (location: Location) => {
+    setSelectedLocation(location);
+    setIsLocationDialogOpen(true);
+  }
+
+  const handleAddNewLocation = () => {
+    setSelectedLocation(null);
+    setIsLocationDialogOpen(true);
+  }
 
   const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setLogoPreview(reader.result as string);
+        const result = reader.result as string;
+        setLogoPreview(result);
+        setInfoFormData(prev => ({...prev, logoUrl: result}));
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const ActionMenu = ({ locId }: { locId: string }) => (
+  const handleInfoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setInfoFormData(prev => ({...prev, [id]: value }));
+  }
+  
+  const handleInfoSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!firestore || !businessInfoDoc) return;
+    const dataToSave = { ...infoFormData };
+    // Ensure we don't save the id inside the document itself
+    delete dataToSave.id;
+    setDoc(businessInfoDoc, dataToSave, { merge: true });
+    alert('Información del negocio guardada.');
+  }
+  
+  const handleContactSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!firestore || !businessInfoDoc) return;
+     const dataToSave = {
+        footerAddress: infoFormData.footerAddress,
+        footerHours: infoFormData.footerHours,
+        footerPhone: infoFormData.footerPhone,
+        footerWhatsapp: infoFormData.footerWhatsapp,
+    };
+    setDoc(businessInfoDoc, dataToSave, { merge: true });
+    alert('Información de contacto guardada.');
+  }
+
+  const ActionMenu = ({ loc }: { loc: Location }) => (
     <DropdownMenu>
        <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="h-8 w-8 p-0">
@@ -937,15 +1162,17 @@ function LocalManagement() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setIsLocationDialogOpen(true)}>
+        <DropdownMenuItem onClick={() => handleEditLocation(loc)}>
           <Edit className="mr-2 h-4 w-4" /> Editar
         </DropdownMenuItem>
-        <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(locId)}>
+        <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteLocation(loc.id)}>
           <Trash2 className="mr-2 h-4 w-4" /> Eliminar
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
+
+  if (infoLoading || locationsLoading) return <div>Cargando información del local...</div>
 
   return (
     <div className="grid gap-6">
@@ -955,10 +1182,10 @@ function LocalManagement() {
           <CardDescription>Actualiza los datos generales de tu restaurante.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form className="space-y-6">
+          <form onSubmit={handleInfoSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="business-name">Nombre del Negocio</Label>
-              <Input id="business-name" defaultValue="Fly" />
+              <Label htmlFor="businessName">Nombre del Negocio</Label>
+              <Input id="businessName" value={infoFormData.businessName || ''} onChange={handleInfoChange} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="logo-upload">Logo</Label>
@@ -983,7 +1210,7 @@ function LocalManagement() {
                 </Button>
               </div>
             </div>
-             <Button>Guardar Cambios</Button>
+             <Button type="submit">Guardar Cambios</Button>
           </form>
         </CardContent>
       </Card>
@@ -994,36 +1221,36 @@ function LocalManagement() {
           <CardDescription>Edita la información que aparece en el pie de página.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form className="space-y-6">
+          <form onSubmit={handleContactSubmit} className="space-y-6">
              <div className="space-y-2">
-              <Label htmlFor="footer-address">Dirección</Label>
+              <Label htmlFor="footerAddress">Dirección</Label>
               <div className="relative">
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input id="footer-address" className="pl-10" defaultValue="Av. Principal 123, Lima, Perú" />
+                <Input id="footerAddress" className="pl-10" value={infoFormData.footerAddress || ''} onChange={handleInfoChange} />
               </div>
             </div>
              <div className="space-y-2">
-              <Label htmlFor="footer-hours">Horario</Label>
+              <Label htmlFor="footerHours">Horario</Label>
               <div className="relative">
                 <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input id="footer-hours" className="pl-10" defaultValue="Lun - Dom: 11:00 AM - 11:00 PM" />
+                <Input id="footerHours" className="pl-10" value={infoFormData.footerHours || ''} onChange={handleInfoChange} />
               </div>
             </div>
              <div className="space-y-2">
-              <Label htmlFor="footer-phone">Teléfono</Label>
+              <Label htmlFor="footerPhone">Teléfono</Label>
                <div className="relative">
                 <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input id="footer-phone" className="pl-10" defaultValue="+51 973 282 798" />
+                <Input id="footerPhone" className="pl-10" value={infoFormData.footerPhone || ''} onChange={handleInfoChange} />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="footer-whatsapp">WhatsApp para Pedidos</Label>
+              <Label htmlFor="footerWhatsapp">WhatsApp para Pedidos</Label>
                <div className="relative">
                 <MessageCircle className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input id="footer-whatsapp" className="pl-10" defaultValue="+51 973 282 798" />
+                <Input id="footerWhatsapp" className="pl-10" value={infoFormData.footerWhatsapp || ''} onChange={handleInfoChange} />
               </div>
             </div>
-            <Button>Actualizar Contacto</Button>
+            <Button type="submit">Actualizar Contacto</Button>
           </form>
         </CardContent>
       </Card>
@@ -1034,14 +1261,14 @@ function LocalManagement() {
             <CardTitle>Gestionar Locales</CardTitle>
             <CardDescription>Añade o edita las sucursales de tu negocio.</CardDescription>
           </div>
-          <Dialog open={isLocationDialogOpen} onOpenChange={setIsLocationDialogOpen}>
+           <Dialog open={isLocationDialogOpen} onOpenChange={(isOpen) => { setIsLocationDialogOpen(isOpen); if (!isOpen) setSelectedLocation(null); }}>
             <DialogTrigger asChild>
-              <Button size="sm" className="gap-1">
+              <Button size="sm" className="gap-1" onClick={handleAddNewLocation}>
                 <PlusCircle className="h-4 w-4" />
                 Añadir Local
               </Button>
             </DialogTrigger>
-            <LocationDialog setDialogOpen={setIsLocationDialogOpen} />
+            <LocationDialog setDialogOpen={setIsLocationDialogOpen} location={null}/>
           </Dialog>
         </CardHeader>
         <CardContent>
@@ -1057,13 +1284,13 @@ function LocalManagement() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {locations.map((loc) => (
+                {locations && locations.map((loc) => (
                   <TableRow key={loc.id}>
                     <TableCell className="font-medium">{loc.name}</TableCell>
                     <TableCell>{loc.address}</TableCell>
                     <TableCell>{loc.phone}</TableCell>
                     <TableCell className="text-right">
-                       <ActionMenu locId={loc.id} />
+                       <ActionMenu loc={loc} />
                     </TableCell>
                   </TableRow>
                 ))}
@@ -1072,11 +1299,11 @@ function LocalManagement() {
           </div>
           {/* Vista de tarjetas para pantallas pequeñas */}
           <div className="grid gap-4 md:hidden">
-            {locations.map((loc) => (
+            {locations && locations.map((loc) => (
               <Card key={loc.id} className="p-4">
                 <div className="flex justify-between items-start">
                     <div className="font-bold">{loc.name}</div>
-                    <ActionMenu locId={loc.id} />
+                    <ActionMenu loc={loc} />
                 </div>
                  <Separator className="my-3" />
                  <div className="space-y-2 text-sm text-muted-foreground">
@@ -1093,34 +1320,63 @@ function LocalManagement() {
 }
 
 
-function LocationDialog({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) => void; }) {
+function LocationDialog({ setDialogOpen, location }: { setDialogOpen: (isOpen: boolean) => void; location?: Location | null }) {
+  const firestore = useFirestore();
+  const [formData, setFormData] = useState<Partial<Location>>(location || {});
+  
+  useEffect(() => {
+      if (location) {
+          setFormData(location)
+      } else {
+          setFormData({});
+      }
+  }, [location]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const { id, value } = e.target;
+      setFormData(prev => ({ ...prev, [id.replace('location-', '')]: value }));
+  }
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    alert('(Simulado) Local guardado.');
+    if (!firestore) return;
+
+    const locationData: Omit<Location, 'id'> = {
+        name: formData.name || '',
+        address: formData.address || '',
+        phone: formData.phone || '',
+        mapUrl: formData.mapUrl || '',
+    };
+    
+    if (location?.id) {
+        updateDocumentNonBlocking(doc(firestore, 'locations', location.id), locationData);
+    } else {
+        addDocumentNonBlocking(collection(firestore, 'locations'), locationData);
+    }
     setDialogOpen(false);
   };
   
   return (
      <DialogContent className="sm:max-w-[480px]">
       <DialogHeader>
-        <DialogTitle>Añadir/Editar Local</DialogTitle>
+        <DialogTitle>{location ? 'Editar' : 'Añadir'} Local</DialogTitle>
       </DialogHeader>
       <form onSubmit={handleSubmit} className="grid gap-4 py-4">
         <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="location-name" className="text-right">Nombre</Label>
-          <Input id="location-name" placeholder="Ej: Local Miraflores" className="col-span-3" />
+          <Input id="location-name" value={formData.name || ''} onChange={handleChange} placeholder="Ej: Local Miraflores" className="col-span-3" />
         </div>
         <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="location-address" className="text-right">Dirección</Label>
-          <Input id="location-address" placeholder="Ej: Av. Larco 123" className="col-span-3" />
+          <Input id="location-address" value={formData.address || ''} onChange={handleChange} placeholder="Ej: Av. Larco 123" className="col-span-3" />
         </div>
         <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="location-phone" className="text-right">Teléfono</Label>
-          <Input id="location-phone" placeholder="Ej: +51 987654321" className="col-span-3" />
+          <Input id="location-phone" value={formData.phone || ''} onChange={handleChange} placeholder="Ej: +51 987654321" className="col-span-3" />
         </div>
         <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="location-map-url" className="text-right">URL de Ubicación (Mapa)</Label>
-          <Input id="location-map-url" placeholder="https://maps.app.goo.gl/..." className="col-span-3" />
+          <Label htmlFor="location-mapUrl" className="text-right">URL de Ubicación (Mapa)</Label>
+          <Input id="location-mapUrl" value={formData.mapUrl || ''} onChange={handleChange} placeholder="https://maps.app.goo.gl/..." className="col-span-3" />
         </div>
         <DialogFooter>
           <Button type="submit">Guardar</Button>
@@ -1129,9 +1385,3 @@ function LocationDialog({ setDialogOpen }: { setDialogOpen: (isOpen: boolean) =>
     </DialogContent>
   );
 }
-
-    
-
-    
-
-    
