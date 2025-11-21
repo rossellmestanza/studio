@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
@@ -50,7 +51,7 @@ import {
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import Link from 'next/link';
 import { useAuth, useUser, useFirestore, useCollection, useDoc, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking, useMemoFirebase, useStorage } from '@/firebase';
-import { collection, doc, setDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -626,7 +627,7 @@ function ProductDialog({ setDialogOpen, product }: { setDialogOpen: (isOpen: boo
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!firestore) return;
+    if (!firestore || !storage) return;
 
     setIsUploading(true);
     
@@ -769,7 +770,7 @@ function CategoryManagement({ selectedCategory, setSelectedCategory, isCategoryD
   const handleDelete = (id: string) => {
     if (!firestore) return;
     if (confirm('¿Estás seguro de que quieres eliminar esta categoría?')) {
-        deleteDocumentNonBlocking(doc(firestore, 'categories', id));
+        deleteDoc(doc(firestore, 'categories', id));
     }
   };
 
@@ -877,9 +878,9 @@ function CategoryDialog({ setDialogOpen, category }: { setDialogOpen: (isOpen: b
     const categoryData = { name };
 
     if (category?.id) {
-        updateDocumentNonBlocking(doc(firestore, 'categories', category.id), categoryData);
+        updateDoc(doc(firestore, 'categories', category.id), categoryData);
     } else {
-        addDocumentNonBlocking(collection(firestore, 'categories'), categoryData);
+        addDoc(collection(firestore, 'categories'), categoryData);
     }
 
     setDialogOpen(false);
@@ -911,7 +912,7 @@ function BannerManagement({ setDialogOpen, onEdit }: { setDialogOpen: (isOpen: b
   const handleDelete = (id: string) => {
     if (!firestore) return;
     if (confirm('¿Estás seguro de que quieres eliminar este banner?')) {
-        deleteDocumentNonBlocking(doc(firestore, 'banners', id));
+        deleteDoc(doc(firestore, 'banners', id));
     }
   };
 
@@ -1047,7 +1048,7 @@ function BannerDialog({ setDialogOpen, banner }: { setDialogOpen: (isOpen: boole
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!firestore) return;
+    if (!firestore || !storage) return;
 
     setIsUploading(true);
     let imageUrl = banner?.imageUrl || '';
@@ -1146,7 +1147,7 @@ function LocalManagement({ selectedLocation, setSelectedLocation, isLocationDial
   const handleDeleteLocation = (id: string) => {
     if (!firestore) return;
     if (confirm('¿Estás seguro de que quieres eliminar este local?')) {
-        deleteDocumentNonBlocking(doc(firestore, 'locations', id));
+        deleteDoc(doc(firestore, 'locations', id));
     }
   };
   
@@ -1179,7 +1180,7 @@ function LocalManagement({ selectedLocation, setSelectedLocation, isLocationDial
   
   const handleInfoSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!firestore || !businessInfoDoc) return;
+    if (!firestore || !businessInfoDoc || !storage) return;
     setIsLogoUploading(true);
 
     let logoUrl = businessInfo?.logoUrl || '';
@@ -1200,7 +1201,7 @@ function LocalManagement({ selectedLocation, setSelectedLocation, isLocationDial
     alert('Información del negocio guardada.');
   }
   
-  const handleContactSubmit = (e: React.FormEvent) => {
+  const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!firestore || !businessInfoDoc) return;
      const dataToSave = {
@@ -1209,7 +1210,7 @@ function LocalManagement({ selectedLocation, setSelectedLocation, isLocationDial
         footerPhone: infoFormData.footerPhone,
         footerWhatsapp: infoFormData.footerWhatsapp,
     };
-    setDoc(businessInfoDoc, dataToSave, { merge: true });
+    await setDoc(businessInfoDoc, dataToSave, { merge: true });
     alert('Información de contacto guardada.');
   }
 
@@ -1398,7 +1399,7 @@ function LocationDialog({ setDialogOpen, location }: { setDialogOpen: (isOpen: b
       setFormData(prev => ({ ...prev, [id.replace('location-', '')]: value }));
   }
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!firestore) return;
 
@@ -1410,9 +1411,9 @@ function LocationDialog({ setDialogOpen, location }: { setDialogOpen: (isOpen: b
     };
     
     if (location?.id) {
-        updateDocumentNonBlocking(doc(firestore, 'locations', location.id), locationData);
+        await updateDoc(doc(firestore, 'locations', location.id), locationData);
     } else {
-        addDocumentNonBlocking(collection(firestore, 'locations'), locationData);
+        await addDoc(collection(firestore, 'locations'), locationData);
     }
     setDialogOpen(false);
   };
@@ -1446,3 +1447,4 @@ function LocationDialog({ setDialogOpen, location }: { setDialogOpen: (isOpen: b
     </DialogContent>
   );
 }
+
