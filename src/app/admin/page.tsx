@@ -81,6 +81,7 @@ export default function AdminDashboard() {
   const [selectedCategory, setSelectedCategory] = useState<MenuCategory | null>(null);
   
   const auth = useAuth();
+  const firestore = useFirestore();
   const router = useRouter();
 
   const handleSignOut = async () => {
@@ -100,6 +101,19 @@ export default function AdminDashboard() {
     setIsProductDialogOpen(true);
   }
 
+  const handleDeleteProduct = async (id: string) => {
+    if (!firestore) return;
+    if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
+        try {
+            await deleteDoc(doc(firestore, 'products', id));
+            alert('Producto eliminado con éxito.');
+        } catch (error) {
+            console.error("Error deleting product: ", error);
+            alert('Error al eliminar el producto. Revisa la consola para más detalles.');
+        }
+    }
+  };
+
   const handleEditBanner = (banner: Banner) => {
     setSelectedBanner(banner);
     setIsBannerDialogOpen(true);
@@ -113,7 +127,7 @@ export default function AdminDashboard() {
   const renderContent = () => {
     switch (activeView) {
       case 'products':
-        return <ProductManagement onEdit={handleEditProduct} />;
+        return <ProductManagement onEdit={handleEditProduct} onDelete={handleDeleteProduct} />;
       case 'categories':
         return <CategoryManagement selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} isCategoryDialogOpen={isCategoryDialogOpen} setIsCategoryDialogOpen={setIsCategoryDialogOpen} />;
       case 'orders':
@@ -445,23 +459,10 @@ function OrderManagement() {
 }
 
 
-function ProductManagement({ onEdit }: { onEdit: (product: MenuItem) => void; }) {
+function ProductManagement({ onEdit, onDelete }: { onEdit: (product: MenuItem) => void; onDelete: (id: string) => void; }) {
   const firestore = useFirestore();
   const productsQuery = useMemoFirebase(() => firestore ? collection(firestore, 'products') : null, [firestore]);
   const { data: products, isLoading } = useCollection<MenuItem>(productsQuery);
-
-  const handleDelete = async (id: string) => {
-    if (!firestore) return;
-    if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
-        try {
-            await deleteDoc(doc(firestore, 'products', id));
-            alert('Producto eliminado con éxito.');
-        } catch (error) {
-            console.error("Error deleting product: ", error);
-            alert('Error al eliminar el producto. Revisa la consola para más detalles.');
-        }
-    }
-  };
   
   const ActionMenu = ({ item, onEdit, onDelete }: { item: MenuItem, onEdit: (item: MenuItem) => void, onDelete: (id: string) => void }) => (
     <DropdownMenu>
@@ -523,7 +524,7 @@ function ProductManagement({ onEdit }: { onEdit: (product: MenuItem) => void; })
                   <TableCell>S/ {item.price.toFixed(2)}</TableCell>
                   <TableCell>{item.extras ? item.extras.length : 0}</TableCell>
                   <TableCell className="text-right">
-                    <ActionMenu item={item} onEdit={onEdit} onDelete={handleDelete} />
+                    <ActionMenu item={item} onEdit={onEdit} onDelete={onDelete} />
                   </TableCell>
                 </TableRow>
               ))}
@@ -549,14 +550,14 @@ function ProductManagement({ onEdit }: { onEdit: (product: MenuItem) => void; })
                       <p className="font-bold">{item.name}</p>
                       <p className="text-sm text-muted-foreground">{item.category}</p>
                     </div>
-                    <ActionMenu item={item} onEdit={onEdit} onDelete={handleDelete} />
+                    <ActionMenu item={item} onEdit={onEdit} onDelete={onDelete} />
                   </div>
                   <div className="flex justify-between items-center mt-2">
                     <div>
                       <p className="font-semibold">S/ {item.price.toFixed(2)}</p>
                       <p className="text-xs text-muted-foreground mt-1">Extras: {item.extras ? item.extras.length : 0}</p>
                     </div>
-                    <Button variant="destructive" size="sm" onClick={() => handleDelete(item.id)}>
+                    <Button variant="destructive" size="sm" onClick={() => onDelete(item.id)}>
                       <Trash2 className="mr-2 h-4 w-4" />
                       Eliminar
                     </Button>
