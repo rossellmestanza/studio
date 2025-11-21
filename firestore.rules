@@ -4,30 +4,32 @@
  * Core Philosophy:
  * This ruleset enforces a strict user-ownership model for user profiles. Only the authenticated user
  * can read or write their own profile data. It also introduces a simple role-based access control.
+ * It allows public read access to menu-related data.
  *
  * Data Structure:
  * All user data is stored under the `/users/{userId}` path, where `{userId}` corresponds to the
  * Firebase Auth UID of the user. Each user document has a `role` field ('user' or 'admin').
+ * Public data like menu items, categories, etc., are in their own collections.
  *
  * Key Security Decisions:
  * - User listing is explicitly disallowed.
  * - Only authenticated users can access their own data. Admins can read any user data.
  * - Data consistency between the path (`userId`) and the document's `id` field is enforced.
  * - Users can only create their own profile with the 'user' role.
- *
- * Denormalization for Authorization:
- * The `id` field within the `/users/{userId}` document is used to ensure that the document's
- * internal representation of the user ID matches the ID in the path. This allows for simple
- * and efficient authorization checks without requiring additional `get()` calls.
- *
- * Structural Segregation:
- * User data is segregated into the `/users/{userId}` collection to ensure a consistent security
- * posture for all user profiles. This simplifies rule definition and reduces the risk of unintended
- * data exposure.
+ * - Menu, categories, banners, locations, and business info are publicly readable.
+ * - All writes to public data are denied by default, assuming they are handled by a trusted backend/admin panel.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
 
     /**
      * @description Controls access to user profile data.
@@ -39,10 +41,6 @@ service cloud.firestore {
      * @deny (list) - Listing users is not allowed for anyone.
      */
     match /users/{userId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
       function isOwner(userId) {
         return isSignedIn() && request.auth.uid == userId;
       }
@@ -51,28 +49,50 @@ service cloud.firestore {
           return isOwner(userId) && resource != null;
       }
 
-      function isAdmin() {
-        return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-      }
-
-      // Allow authenticated users to create their own profile with the 'user' role.
       allow create: if isOwner(userId)
                    && request.resource.data.id == userId
                    && request.resource.data.role == 'user';
-
-      // Allow the owner or an admin to read profile data.
       allow get: if isOwner(userId) || isAdmin();
-
-      // Disallow listing users for security.
       allow list: if false;
-
-      // Allow the owner to update their own profile data, ensuring ID and role are not changed by them.
       allow update: if isExistingOwner(userId)
                     && request.resource.data.id == resource.data.id
                     && request.resource.data.role == resource.data.role;
-
-      // Allow the owner to delete their own profile data.
       allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * Publicly readable collections.
+     * Deny all write operations by default; these should be handled by admins.
+     */
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /banners/{bannerId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /locations/{locationId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Rules for orders. Only admins can read all orders.
+    // Users will place orders via a different mechanism (e.g. WhatsApp, Cloud Function).
+    match /orders/{orderId} {
+      allow read, write: if isAdmin();
     }
   }
 }
