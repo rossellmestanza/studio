@@ -62,13 +62,12 @@ import {
 } from 'recharts';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import Link from 'next/link';
-import { useAuth, useUser, useFirestore, useCollection, useDoc, useMemoFirebase, useStorage } from '@/firebase';
+import { useAuth, useUser, useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, doc, setDoc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Separator } from '@/components/ui/separator';
-import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 import { Progress } from '@/components/ui/progress';
 
 const monthlyRevenueData = [
@@ -1642,15 +1641,3 @@ function LocationDialog({ setDialogOpen, location }: { setDialogOpen: (isOpen: b
     </DialogContent>
   );
 }
-
-
-
-    
-
-    
-
-
-
-
-
-
