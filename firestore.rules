@@ -1,3 +1,4 @@
+
 /**
  * @fileoverview Firestore Security Rules for Fly Menú Digital.
  *
@@ -17,7 +18,7 @@
  * - Data consistency between the path (`userId`) and the document's `id` field is enforced.
  * - Users can only create their own profile with the 'user' role.
  * - Menu, categories, banners, locations, and business info are publicly readable.
- * - All writes to public data are denied by default, assuming they are handled by a trusted backend/admin panel.
+ * - All writes to public data are restricted to users with the 'admin' role.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -62,7 +63,7 @@ service cloud.firestore {
 
     /**
      * Publicly readable collections.
-     * Deny all write operations by default; these should be handled by admins.
+     * Write operations are restricted to admins.
      */
     match /products/{productId} {
       allow read: if true;
