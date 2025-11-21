@@ -50,7 +50,7 @@ import {
 } from 'recharts';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import Link from 'next/link';
-import { useAuth, useUser, useFirestore, useCollection, useDoc, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking, useMemoFirebase, useStorage } from '@/firebase';
+import { useAuth, useUser, useFirestore, useCollection, useDoc, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking, useMemoFirebase, useStorage, setDocumentNonBlocking } from '@/firebase';
 import { collection, doc, setDoc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
@@ -113,13 +113,13 @@ export default function AdminDashboard() {
   const renderContent = () => {
     switch (activeView) {
       case 'products':
-        return <ProductManagement setDialogOpen={setIsProductDialogOpen} onEdit={handleEditProduct} />;
+        return <ProductManagement onEdit={handleEditProduct} />;
       case 'categories':
         return <CategoryManagement selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} isCategoryDialogOpen={isCategoryDialogOpen} setIsCategoryDialogOpen={setIsCategoryDialogOpen} />;
       case 'orders':
         return <OrderManagement />;
       case 'banners':
-        return <BannerManagement setDialogOpen={setIsBannerDialogOpen} onEdit={handleEditBanner} />;
+        return <BannerManagement onEdit={handleEditBanner} />;
       case 'local':
         return <LocalManagement selectedLocation={selectedLocation} setSelectedLocation={setSelectedLocation} isLocationDialogOpen={isLocationDialogOpen} setIsLocationDialogOpen={setIsLocationDialogOpen} />;
       case 'dashboard':
@@ -445,7 +445,7 @@ function OrderManagement() {
 }
 
 
-function ProductManagement({ setDialogOpen, onEdit }: { setDialogOpen: (isOpen: boolean) => void; onEdit: (product: MenuItem) => void; }) {
+function ProductManagement({ onEdit }: { onEdit: (product: MenuItem) => void; }) {
   const firestore = useFirestore();
   const productsQuery = useMemoFirebase(() => firestore ? collection(firestore, 'products') : null, [firestore]);
   const { data: products, isLoading } = useCollection<MenuItem>(productsQuery);
@@ -904,7 +904,7 @@ function CategoryDialog({ setDialogOpen, category }: { setDialogOpen: (isOpen: b
   );
 }
 
-function BannerManagement({ setDialogOpen, onEdit }: { setDialogOpen: (isOpen: boolean) => void; onEdit: (banner: Banner) => void; }) {
+function BannerManagement({ onEdit }: { onEdit: (banner: Banner) => void; }) {
   const firestore = useFirestore();
   const bannersQuery = useMemoFirebase(() => firestore ? collection(firestore, 'banners') : null, [firestore]);
   const { data: banners, isLoading } = useCollection<Banner>(bannersQuery);
@@ -920,6 +920,7 @@ function BannerManagement({ setDialogOpen, onEdit }: { setDialogOpen: (isOpen: b
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="h-8 w-8 p-0">
+          <span className="sr-only">Abrir menú</span>
           <MoreHorizontal className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
@@ -1448,3 +1449,6 @@ function LocationDialog({ setDialogOpen, location }: { setDialogOpen: (isOpen: b
   );
 }
 
+
+
+    
