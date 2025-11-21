@@ -1,0 +1,15 @@
+
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Allow public read access to all files
+    match /{allPaths=**} {
+      allow read: if true;
+      // Allow write only for authenticated users (admins)
+      // This is a basic rule. You might want to restrict by path (e.g., only in `products/`)
+      // and check for user role if you have one.
+      allow write: if request.auth != null;
+    }
+  }
+}

@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
@@ -49,12 +49,14 @@ import {
 } from 'recharts';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import Link from 'next/link';
-import { useAuth, useUser, useFirestore, useCollection, useDoc, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking, useMemoFirebase } from '@/firebase';
+import { useAuth, useUser, useFirestore, useCollection, useDoc, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking, useMemoFirebase, useStorage } from '@/firebase';
 import { collection, doc, setDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Separator } from '@/components/ui/separator';
+import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
+import { Progress } from '@/components/ui/progress';
 
 const monthlyRevenueData = [
     { month: 'Enero', revenue: 1200 },
@@ -70,6 +72,8 @@ export default function AdminDashboard() {
   const [activeView, setActiveView] = useState('dashboard');
   const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
   const [isBannerDialogOpen, setIsBannerDialogOpen] = useState(false);
+  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
+  const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<MenuItem | null>(null);
   const [selectedBanner, setSelectedBanner] = useState<Banner | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
@@ -110,13 +114,13 @@ export default function AdminDashboard() {
       case 'products':
         return <ProductManagement setDialogOpen={setIsProductDialogOpen} onEdit={handleEditProduct} />;
       case 'categories':
-        return <CategoryManagement setSelectedCategory={setSelectedCategory} />;
+        return <CategoryManagement selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} isCategoryDialogOpen={isCategoryDialogOpen} setIsCategoryDialogOpen={setIsCategoryDialogOpen} />;
       case 'orders':
         return <OrderManagement />;
       case 'banners':
         return <BannerManagement setDialogOpen={setIsBannerDialogOpen} onEdit={handleEditBanner} />;
       case 'local':
-        return <LocalManagement setSelectedLocation={setSelectedLocation} />;
+        return <LocalManagement selectedLocation={selectedLocation} setSelectedLocation={setSelectedLocation} isLocationDialogOpen={isLocationDialogOpen} setIsLocationDialogOpen={setIsLocationDialogOpen} />;
       case 'dashboard':
       default:
         return <DashboardOverview />;
@@ -229,16 +233,20 @@ function DashboardOverview() {
 
     const monthlyRevenue = useMemo(() => {
         const currentMonthRevenue = { 
-            month: 'Mayo', // This should be dynamic in a real app
+            month: new Date().toLocaleString('es-PE', { month: 'long' }),
             revenue: totalRevenue 
         };
-        const existingMonthIndex = monthlyRevenueData.findIndex(d => d.month === currentMonthRevenue.month);
+        const existingMonthIndex = monthlyRevenueData.findIndex(d => d.month.toLowerCase() === currentMonthRevenue.month.toLowerCase());
+        
+        let updatedData = [...monthlyRevenueData];
         if (existingMonthIndex !== -1) {
-            const updatedData = [...monthlyRevenueData];
-            updatedData[existingMonthIndex] = currentMonthRevenue;
-            return updatedData;
+            updatedData[existingMonthIndex] = {
+                ...updatedData[existingMonthIndex],
+                revenue: currentMonthRevenue.revenue
+            };
         }
-        return [...monthlyRevenueData, currentMonthRevenue];
+        
+        return updatedData;
     }, [totalRevenue]);
 
     if (ordersLoading || productsLoading || categoriesLoading) {
@@ -551,13 +559,16 @@ function ProductManagement({ setDialogOpen, onEdit }: { setDialogOpen: (isOpen: 
 
 function ProductDialog({ setDialogOpen, product }: { setDialogOpen: (isOpen: boolean) => void; product?: MenuItem | null }) {
   const firestore = useFirestore();
+  const storage = useStorage();
   const categoriesQuery = useMemoFirebase(() => firestore ? collection(firestore, 'categories') : null, [firestore]);
   const { data: categories, isLoading: categoriesLoading } = useCollection<MenuCategory>(categoriesQuery);
   
-  const [formData, setFormData] = useState<Partial<MenuItem>>(product || {});
-  const [extras, setExtras] = useState<MenuItemExtra[]>(product?.extras || []);
-  const [imagePreview, setImagePreview] = useState<string | null>(product?.image || null);
+  const [formData, setFormData] = useState<Partial<MenuItem>>({});
+  const [extras, setExtras] = useState<MenuItemExtra[]>([]);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   useEffect(() => {
     if (product) {
@@ -565,10 +576,13 @@ function ProductDialog({ setDialogOpen, product }: { setDialogOpen: (isOpen: boo
       setExtras(product.extras || []);
       setImagePreview(product.image || null);
     } else {
-      setFormData({});
+      setFormData({price: 0, originalPrice: undefined});
       setExtras([]);
       setImagePreview(null);
     }
+    setImageFile(null);
+    setIsUploading(false);
+    setUploadProgress(0);
   }, [product]);
 
   const handleAddExtra = () => {
@@ -592,18 +606,16 @@ function ProductDialog({ setDialogOpen, product }: { setDialogOpen: (isOpen: boo
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      setIsUploading(true);
+      setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
-        setFormData(prev => ({...prev, image: reader.result as string }));
-        setIsUploading(false);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const { id, value } = e.target;
       setFormData(prev => ({...prev, [id]: value }));
   };
@@ -612,9 +624,22 @@ function ProductDialog({ setDialogOpen, product }: { setDialogOpen: (isOpen: boo
     setFormData(prev => ({...prev, category: value }));
   }
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!firestore) return;
+
+    setIsUploading(true);
+    
+    let imageUrl = product?.image || '';
+
+    if (imageFile) {
+        setUploadProgress(20);
+        const imageRef = storageRef(storage, `products/${Date.now()}_${imageFile.name}`);
+        await uploadBytes(imageRef, imageFile);
+        setUploadProgress(80);
+        imageUrl = await getDownloadURL(imageRef);
+        setUploadProgress(100);
+    }
 
     const productData: Omit<MenuItem, 'id'> = {
         name: formData.name || '',
@@ -622,7 +647,7 @@ function ProductDialog({ setDialogOpen, product }: { setDialogOpen: (isOpen: boo
         price: parseFloat(String(formData.price)) || 0,
         originalPrice: parseFloat(String(formData.originalPrice)) || undefined,
         category: formData.category || '',
-        image: formData.image || '',
+        image: imageUrl,
         imageHint: formData.imageHint || '',
         extras: extras,
     };
@@ -630,13 +655,14 @@ function ProductDialog({ setDialogOpen, product }: { setDialogOpen: (isOpen: boo
     if (product?.id) {
         // Update existing product
         const productRef = doc(firestore, 'products', product.id);
-        updateDocumentNonBlocking(productRef, productData);
+        await updateDoc(productRef, productData);
     } else {
         // Add new product
         const productsCollection = collection(firestore, 'products');
-        addDocumentNonBlocking(productsCollection, productData);
+        await addDoc(productsCollection, productData);
     }
 
+    setIsUploading(false);
     setDialogOpen(false);
   };
   
@@ -670,20 +696,20 @@ function ProductDialog({ setDialogOpen, product }: { setDialogOpen: (isOpen: boo
         </div>
         <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="price" className="text-right">Precio</Label>
-          <Input id="price" type="number" value={formData.price || ''} onChange={handleChange} className="col-span-3" />
+          <Input id="price" type="number" step="0.01" value={formData.price || ''} onChange={handleChange} className="col-span-3" />
         </div>
         <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="originalPrice" className="text-right">Precio Original</Label>
-          <Input id="originalPrice" type="number" value={formData.originalPrice || ''} onChange={handleChange} className="col-span-3" placeholder="(Opcional)" />
+          <Input id="originalPrice" type="number" step="0.01" value={formData.originalPrice || ''} onChange={handleChange} className="col-span-3" placeholder="(Opcional)" />
         </div>
         <div className="grid grid-cols-4 items-start gap-4">
-          <Label htmlFor="image" className="text-right pt-2">Imagen</Label>
+          <Label htmlFor="image-upload" className="text-right pt-2">Imagen</Label>
           <div className="col-span-3 space-y-2">
             <Input id="image-upload" type="file" accept="image/*" onChange={handleImageChange} className="col-span-3" />
-             {isUploading && <p className="text-sm text-muted-foreground">Cargando...</p>}
-             {imagePreview && !isUploading && (
+             {isUploading && <Progress value={uploadProgress} className="w-full" />}
+             {imagePreview && (
                 <div className="relative w-32 h-32 mt-2 rounded-md overflow-hidden">
-                    <Image src={imagePreview} alt="Vista previa" fill objectFit="cover" />
+                    <Image src={imagePreview} alt="Vista previa" layout="fill" objectFit="cover" />
                 </div>
             )}
           </div>
@@ -728,20 +754,18 @@ function ProductDialog({ setDialogOpen, product }: { setDialogOpen: (isOpen: boo
 
 
         <DialogFooter>
-          <Button type="submit">Guardar Cambios</Button>
+          <Button type="submit" disabled={isUploading}>{isUploading ? 'Guardando...' : 'Guardar Cambios'}</Button>
         </DialogFooter>
       </form>
     </DialogContent>
   );
 }
 
-function CategoryManagement({ setSelectedCategory }: { setSelectedCategory: (category: MenuCategory | null) => void; }) {
+function CategoryManagement({ selectedCategory, setSelectedCategory, isCategoryDialogOpen, setIsCategoryDialogOpen }: { selectedCategory: MenuCategory | null, setSelectedCategory: (category: MenuCategory | null) => void; isCategoryDialogOpen: boolean; setIsCategoryDialogOpen: (isOpen: boolean) => void; }) {
   const firestore = useFirestore();
   const categoriesQuery = useMemoFirebase(() => firestore ? collection(firestore, 'categories') : null, [firestore]);
   const { data: categories, isLoading } = useCollection<MenuCategory>(categoriesQuery);
   
-  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
-
   const handleDelete = (id: string) => {
     if (!firestore) return;
     if (confirm('¿Estás seguro de que quieres eliminar esta categoría?')) {
@@ -795,7 +819,7 @@ function CategoryManagement({ setSelectedCategory }: { setSelectedCategory: (cat
               Añadir Categoría
             </Button>
           </DialogTrigger>
-          <CategoryDialog setDialogOpen={setIsCategoryDialogOpen} category={null}/>
+          <CategoryDialog setDialogOpen={setIsCategoryDialogOpen} category={selectedCategory}/>
         </Dialog>
       </CardHeader>
       <CardContent>
@@ -842,9 +866,13 @@ function CategoryDialog({ setDialogOpen, category }: { setDialogOpen: (isOpen: b
   const firestore = useFirestore();
   const [name, setName] = useState(category?.name || '');
 
+  useEffect(() => {
+    setName(category?.name || '');
+  }, [category])
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!firestore) return;
+    if (!firestore || !name) return;
 
     const categoryData = { name };
 
@@ -980,9 +1008,12 @@ function BannerManagement({ setDialogOpen, onEdit }: { setDialogOpen: (isOpen: b
 
 function BannerDialog({ setDialogOpen, banner }: { setDialogOpen: (isOpen: boolean) => void; banner?: Banner | null }) {
   const firestore = useFirestore();
-  const [formData, setFormData] = useState<Partial<Banner>>(banner || {});
-  const [imagePreview, setImagePreview] = useState<string | null>(banner?.imageUrl || null);
+  const storage = useStorage();
+  const [formData, setFormData] = useState<Partial<Banner>>({});
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   
   useEffect(() => {
     if (banner) {
@@ -992,6 +1023,9 @@ function BannerDialog({ setDialogOpen, banner }: { setDialogOpen: (isOpen: boole
         setFormData({});
         setImagePreview(null);
     }
+    setImageFile(null);
+    setIsUploading(false);
+    setUploadProgress(0);
   }, [banner]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -1002,36 +1036,47 @@ function BannerDialog({ setDialogOpen, banner }: { setDialogOpen: (isOpen: boole
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      setIsUploading(true);
+      setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        const result = reader.result as string;
-        setImagePreview(result);
-        setFormData(prev => ({...prev, imageUrl: result }));
-        setIsUploading(false);
+        setImagePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!firestore) return;
+
+    setIsUploading(true);
+    let imageUrl = banner?.imageUrl || '';
+
+    if (imageFile) {
+        setUploadProgress(20);
+        const imageRef = storageRef(storage, `banners/${Date.now()}_${imageFile.name}`);
+        await uploadBytes(imageRef, imageFile);
+        setUploadProgress(80);
+        imageUrl = await getDownloadURL(imageRef);
+        setUploadProgress(100);
+    }
+
 
     const bannerData: Omit<Banner, 'id'> = {
         title: formData.title || '',
         description: formData.description || '',
         buttonText: formData.buttonText || '',
-        imageUrl: formData.imageUrl || '',
+        imageUrl: imageUrl,
         href: formData.href || '',
     };
     
     if (banner?.id) {
-        updateDocumentNonBlocking(doc(firestore, 'banners', banner.id), bannerData);
+        await updateDoc(doc(firestore, 'banners', banner.id), bannerData);
     } else {
-        addDocumentNonBlocking(collection(firestore, 'banners'), bannerData);
+        await addDoc(collection(firestore, 'banners'), bannerData);
     }
 
+    setIsUploading(false);
     setDialogOpen(false);
   };
    
@@ -1053,10 +1098,10 @@ function BannerDialog({ setDialogOpen, banner }: { setDialogOpen: (isOpen: boole
           <Label htmlFor="image-upload" className="text-right pt-2">Imagen</Label>
           <div className="col-span-3 space-y-2">
             <Input id="image-upload" type="file" accept="image/*" onChange={handleImageChange} className="col-span-3" />
-             {isUploading && <p className="text-sm text-muted-foreground">Cargando...</p>}
+             {isUploading && <Progress value={uploadProgress} className="w-full" />}
              {imagePreview && !isUploading && (
                 <div className="relative w-full aspect-video mt-2 rounded-md overflow-hidden">
-                    <Image src={imagePreview} alt="Vista previa del banner" fill objectFit="cover" />
+                    <Image src={imagePreview} alt="Vista previa del banner" layout="fill" objectFit="cover" />
                 </div>
             )}
           </div>
@@ -1070,24 +1115,26 @@ function BannerDialog({ setDialogOpen, banner }: { setDialogOpen: (isOpen: boole
           <Input id="banner-href" value={formData.href || ''} onChange={handleChange} placeholder="Ej: /carta" className="col-span-3" />
         </div>
         <DialogFooter>
-          <Button type="submit">Guardar</Button>
+          <Button type="submit" disabled={isUploading}>{isUploading ? 'Guardando...' : 'Guardar'}</Button>
         </DialogFooter>
       </form>
     </DialogContent>
   );
 }
 
-function LocalManagement({ setSelectedLocation }: { setSelectedLocation: (location: Location | null) => void; }) {
+function LocalManagement({ selectedLocation, setSelectedLocation, isLocationDialogOpen, setIsLocationDialogOpen }: { selectedLocation: Location | null; setSelectedLocation: (location: Location | null) => void; isLocationDialogOpen: boolean; setIsLocationDialogOpen: (isOpen: boolean) => void; }) {
   const firestore = useFirestore();
+  const storage = useStorage();
   const businessInfoDoc = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'businessInfo') : null, [firestore]);
   const { data: businessInfo, isLoading: infoLoading } = useDoc<BusinessInfo>(businessInfoDoc);
   const locationsQuery = useMemoFirebase(() => firestore ? collection(firestore, 'locations') : null, [firestore]);
   const { data: locations, isLoading: locationsLoading } = useCollection<Location>(locationsQuery);
 
-  const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [isLogoUploading, setIsLogoUploading] = useState(false);
   const [infoFormData, setInfoFormData] = useState<Partial<BusinessInfo>>({});
-  const logoInputRef = React.useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
       if (businessInfo) {
@@ -1116,11 +1163,10 @@ function LocalManagement({ setSelectedLocation }: { setSelectedLocation: (locati
   const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      setLogoFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        const result = reader.result as string;
-        setLogoPreview(result);
-        setInfoFormData(prev => ({...prev, logoUrl: result}));
+        setLogoPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
@@ -1131,13 +1177,26 @@ function LocalManagement({ setSelectedLocation }: { setSelectedLocation: (locati
     setInfoFormData(prev => ({...prev, [id]: value }));
   }
   
-  const handleInfoSubmit = (e: React.FormEvent) => {
+  const handleInfoSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!firestore || !businessInfoDoc) return;
-    const dataToSave = { ...infoFormData };
-    // Ensure we don't save the id inside the document itself
-    delete dataToSave.id;
-    setDoc(businessInfoDoc, dataToSave, { merge: true });
+    setIsLogoUploading(true);
+
+    let logoUrl = businessInfo?.logoUrl || '';
+
+    if (logoFile) {
+        const logoRef = storageRef(storage, `logos/${Date.now()}_${logoFile.name}`);
+        await uploadBytes(logoRef, logoFile);
+        logoUrl = await getDownloadURL(logoRef);
+    }
+
+    const dataToSave = { 
+        ...infoFormData,
+        logoUrl,
+    };
+    
+    await setDoc(businessInfoDoc, dataToSave, { merge: true });
+    setIsLogoUploading(false);
     alert('Información del negocio guardada.');
   }
   
@@ -1192,7 +1251,7 @@ function LocalManagement({ setSelectedLocation }: { setSelectedLocation: (locati
               <div className="flex items-center gap-4">
                 <div className="w-24 h-24 bg-muted rounded-md flex items-center justify-center relative overflow-hidden">
                     {logoPreview ? (
-                        <Image src={logoPreview} alt="Vista previa del logo" fill objectFit="cover" />
+                        <Image src={logoPreview} alt="Vista previa del logo" layout="fill" objectFit="cover" />
                     ) : (
                         <span className="text-2xl font-bold" style={{fontFamily: "'Ms Madi', cursive"}}>Fly</span>
                     )}
@@ -1210,7 +1269,9 @@ function LocalManagement({ setSelectedLocation }: { setSelectedLocation: (locati
                 </Button>
               </div>
             </div>
-             <Button type="submit">Guardar Cambios</Button>
+             <Button type="submit" disabled={isLogoUploading}>
+                {isLogoUploading ? 'Guardando...' : 'Guardar Cambios'}
+            </Button>
           </form>
         </CardContent>
       </Card>
@@ -1268,7 +1329,7 @@ function LocalManagement({ setSelectedLocation }: { setSelectedLocation: (locati
                 Añadir Local
               </Button>
             </DialogTrigger>
-            <LocationDialog setDialogOpen={setIsLocationDialogOpen} location={null}/>
+            <LocationDialog setDialogOpen={setIsLocationDialogOpen} location={selectedLocation}/>
           </Dialog>
         </CardHeader>
         <CardContent>
@@ -1322,7 +1383,7 @@ function LocalManagement({ setSelectedLocation }: { setSelectedLocation: (locati
 
 function LocationDialog({ setDialogOpen, location }: { setDialogOpen: (isOpen: boolean) => void; location?: Location | null }) {
   const firestore = useFirestore();
-  const [formData, setFormData] = useState<Partial<Location>>(location || {});
+  const [formData, setFormData] = useState<Partial<Location>>({});
   
   useEffect(() => {
       if (location) {
