@@ -500,113 +500,113 @@ function ProductManagement({ onEdit, onDelete }: { onEdit: (product: MenuItem) =
   if (isLoading) return <div>Cargando productos...</div>
 
   return (
-    <>
-    <Card>
-      <CardHeader>
-        <CardTitle>Productos</CardTitle>
-        <CardDescription>Gestiona los productos de tu menú.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        {/* Vista de tabla para pantallas grandes */}
-        <div className="hidden md:block">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[100px]">Imagen</TableHead>
-                <TableHead>Nombre</TableHead>
-                <TableHead>Categoría</TableHead>
-                <TableHead>Precio</TableHead>
-                <TableHead>Extras</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {products && products.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell>
-                    <Image
-                      src={item.image}
-                      alt={item.name}
-                      width={64}
-                      height={64}
-                      className="rounded-md object-cover"
-                    />
-                  </TableCell>
-                  <TableCell className="font-medium">{item.name}</TableCell>
-                  <TableCell>{item.category}</TableCell>
-                  <TableCell>S/ {item.price.toFixed(2)}</TableCell>
-                  <TableCell>{item.extras ? item.extras.length : 0}</TableCell>
-                  <TableCell className="text-right">
-                    <ActionMenu item={item} onEdit={onEdit} />
-                  </TableCell>
+    <AlertDialog>
+      <Card>
+        <CardHeader>
+          <CardTitle>Productos</CardTitle>
+          <CardDescription>Gestiona los productos de tu menú.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {/* Vista de tabla para pantallas grandes */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[100px]">Imagen</TableHead>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead>Categoría</TableHead>
+                  <TableHead>Precio</TableHead>
+                  <TableHead>Extras</TableHead>
+                  <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {products && products.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell>
+                      <Image
+                        src={item.image}
+                        alt={item.name}
+                        width={64}
+                        height={64}
+                        className="rounded-md object-cover"
+                      />
+                    </TableCell>
+                    <TableCell className="font-medium">{item.name}</TableCell>
+                    <TableCell>{item.category}</TableCell>
+                    <TableCell>S/ {item.price.toFixed(2)}</TableCell>
+                    <TableCell>{item.extras ? item.extras.length : 0}</TableCell>
+                    <TableCell className="text-right">
+                      <ActionMenu item={item} onEdit={onEdit} />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
 
-        {/* Vista de tarjetas para pantallas pequeñas */}
-        <div className="grid gap-4 md:hidden">
-          {products && products.map((item) => (
-            <Card key={item.id} className="p-4">
-              <div className="flex gap-4">
-                <Image
-                  src={item.image}
-                  alt={item.name}
-                  width={80}
-                  height={80}
-                  className="rounded-md object-cover"
-                />
-                <div className="flex-grow">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="font-bold">{item.name}</p>
-                      <p className="text-sm text-muted-foreground">{item.category}</p>
+          {/* Vista de tarjetas para pantallas pequeñas */}
+          <div className="grid gap-4 md:hidden">
+            {products && products.map((item) => (
+              <Card key={item.id} className="p-4">
+                <div className="flex gap-4">
+                  <Image
+                    src={item.image}
+                    alt={item.name}
+                    width={80}
+                    height={80}
+                    className="rounded-md object-cover"
+                  />
+                  <div className="flex-grow">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="font-bold">{item.name}</p>
+                        <p className="text-sm text-muted-foreground">{item.category}</p>
+                      </div>
+                      <ActionMenu item={item} onEdit={onEdit} />
                     </div>
-                    <ActionMenu item={item} onEdit={onEdit} />
-                  </div>
-                  <div className="flex justify-between items-center mt-2">
-                    <div>
-                      <p className="font-semibold">S/ {item.price.toFixed(2)}</p>
-                      <p className="text-xs text-muted-foreground mt-1">Extras: {item.extras ? item.extras.length : 0}</p>
+                    <div className="flex justify-between items-center mt-2">
+                      <div>
+                        <p className="font-semibold">S/ {item.price.toFixed(2)}</p>
+                        <p className="text-xs text-muted-foreground mt-1">Extras: {item.extras ? item.extras.length : 0}</p>
+                      </div>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="sm" onClick={() => setItemToDelete(item)}>
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Eliminar
+                        </Button>
+                      </AlertDialogTrigger>
                     </div>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="destructive" size="sm" onClick={() => setItemToDelete(item)}>
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Eliminar
-                      </Button>
-                    </AlertDialogTrigger>
                   </div>
                 </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-    {itemToDelete && (
-        <AlertDialogContent>
-            <AlertDialogHeader>
-            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-            <AlertDialogDescription>
-                Esta acción no se puede deshacer. Esto eliminará permanentemente el producto "{itemToDelete.name}".
-            </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setItemToDelete(null)}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-                onClick={() => {
-                onDelete(itemToDelete.id);
-                setItemToDelete(null);
-                }}
-                className="bg-destructive hover:bg-destructive/90"
-            >
-                Eliminar
-            </AlertDialogAction>
-            </AlertDialogFooter>
-        </AlertDialogContent>
-    )}
-    </>
+              </Card>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+      {itemToDelete && (
+          <AlertDialogContent>
+              <AlertDialogHeader>
+              <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+              <AlertDialogDescription>
+                  Esta acción no se puede deshacer. Esto eliminará permanentemente el producto "{itemToDelete.name}".
+              </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setItemToDelete(null)}>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                  onClick={() => {
+                  onDelete(itemToDelete.id);
+                  setItemToDelete(null);
+                  }}
+                  className="bg-destructive hover:bg-destructive/90"
+              >
+                  Eliminar
+              </AlertDialogAction>
+              </AlertDialogFooter>
+          </AlertDialogContent>
+      )}
+    </AlertDialog>
   );
 }
 
@@ -1600,4 +1600,5 @@ function LocationDialog({ setDialogOpen, location }: { setDialogOpen: (isOpen: b
     
 
     
+
 
