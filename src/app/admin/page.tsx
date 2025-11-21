@@ -102,15 +102,23 @@ export default function AdminDashboard() {
   }
 
   const handleDeleteProduct = async (id: string) => {
-    if (!firestore) return;
+    console.log('[DEBUG] handleDeleteProduct called with id:', id);
+    if (!firestore) {
+      console.error('[DEBUG] Firestore not available');
+      return;
+    }
     if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
+        console.log('[DEBUG] User confirmed deletion.');
         try {
             await deleteDoc(doc(firestore, 'products', id));
+            console.log('[DEBUG] Product deletion successful.');
             alert('Producto eliminado con éxito.');
         } catch (error) {
-            console.error("Error deleting product: ", error);
+            console.error("[DEBUG] Error deleting product: ", error);
             alert('Error al eliminar el producto. Revisa la consola para más detalles.');
         }
+    } else {
+        console.log('[DEBUG] User cancelled deletion.');
     }
   };
 
@@ -477,7 +485,7 @@ function ProductManagement({ onEdit, onDelete }: { onEdit: (product: MenuItem) =
           <Edit className="mr-2 h-4 w-4" />
           Editar
         </DropdownMenuItem>
-        <DropdownMenuItem className="text-destructive" onClick={() => onDelete(item.id)}>
+        <DropdownMenuItem className="text-destructive" onClick={() => { console.log('[DEBUG] Delete clicked from ActionMenu'); onDelete(item.id); }}>
           <Trash2 className="mr-2 h-4 w-4" />
           Eliminar
         </DropdownMenuItem>
@@ -557,7 +565,7 @@ function ProductManagement({ onEdit, onDelete }: { onEdit: (product: MenuItem) =
                       <p className="font-semibold">S/ {item.price.toFixed(2)}</p>
                       <p className="text-xs text-muted-foreground mt-1">Extras: {item.extras ? item.extras.length : 0}</p>
                     </div>
-                    <Button variant="destructive" size="sm" onClick={() => onDelete(item.id)}>
+                    <Button variant="destructive" size="sm" onClick={() => { console.log('[DEBUG] Delete clicked from direct button'); onDelete(item.id); }}>
                       <Trash2 className="mr-2 h-4 w-4" />
                       Eliminar
                     </Button>
@@ -1465,5 +1473,7 @@ function LocationDialog({ setDialogOpen, location }: { setDialogOpen: (isOpen: b
 }
 
 
+
+    
 
     
