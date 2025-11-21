@@ -50,7 +50,7 @@ import {
 } from 'recharts';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import Link from 'next/link';
-import { useAuth, useUser, useFirestore, useCollection, useDoc, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking, useMemoFirebase, useStorage, setDocumentNonBlocking } from '@/firebase';
+import { useAuth, useUser, useFirestore, useCollection, useDoc, useMemoFirebase, useStorage } from '@/firebase';
 import { collection, doc, setDoc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
@@ -339,7 +339,7 @@ function OrderManagement() {
   const handleStatusChange = (orderId: string, status: Order['status']) => {
       if (!firestore) return;
       const orderRef = doc(firestore, 'orders', orderId);
-      updateDocumentNonBlocking(orderRef, { status });
+      updateDoc(orderRef, { status });
   };
 
 
@@ -450,10 +450,16 @@ function ProductManagement({ onEdit }: { onEdit: (product: MenuItem) => void; })
   const productsQuery = useMemoFirebase(() => firestore ? collection(firestore, 'products') : null, [firestore]);
   const { data: products, isLoading } = useCollection<MenuItem>(productsQuery);
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (!firestore) return;
     if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
-        deleteDocumentNonBlocking(doc(firestore, 'products', id));
+        try {
+            await deleteDoc(doc(firestore, 'products', id));
+            alert('Producto eliminado con éxito.');
+        } catch (error) {
+            console.error("Error deleting product: ", error);
+            alert('Error al eliminar el producto. Revisa la consola para más detalles.');
+        }
     }
   };
 
