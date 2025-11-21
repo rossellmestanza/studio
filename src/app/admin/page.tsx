@@ -20,6 +20,7 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogFooter,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import {
   AlertDialog,
@@ -114,8 +115,10 @@ export default function AdminDashboard() {
 
   const handleDeleteProduct = async (id: string) => {
     if (!firestore) return;
+    console.log("Attempting to delete product with ID:", id);
     try {
         await deleteDoc(doc(firestore, 'products', id));
+        console.log("Product deleted successfully");
     } catch (error) {
         console.error("Error deleting product: ", error);
     }
@@ -472,7 +475,7 @@ function ProductManagement({ onEdit, onDelete }: { onEdit: (product: MenuItem) =
   const { data: products, isLoading } = useCollection<MenuItem>(productsQuery);
   const [itemToDelete, setItemToDelete] = useState<MenuItem | null>(null);
 
-  const ActionMenu = ({ item, onEdit, onDelete }: { item: MenuItem; onEdit: (item: MenuItem) => void; onDelete: (id: string) => void; }) => (
+  const ActionMenu = ({ item, onEdit }: { item: MenuItem; onEdit: (item: MenuItem) => void; }) => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="h-8 w-8 p-0">
@@ -535,7 +538,7 @@ function ProductManagement({ onEdit, onDelete }: { onEdit: (product: MenuItem) =
                     <TableCell>S/ {item.price.toFixed(2)}</TableCell>
                     <TableCell>{item.extras ? item.extras.length : 0}</TableCell>
                     <TableCell className="text-right">
-                      <ActionMenu item={item} onEdit={onEdit} onDelete={onDelete} />
+                      <ActionMenu item={item} onEdit={onEdit} />
                     </TableCell>
                   </TableRow>
                 ))}
@@ -561,7 +564,7 @@ function ProductManagement({ onEdit, onDelete }: { onEdit: (product: MenuItem) =
                         <p className="font-bold">{item.name}</p>
                         <p className="text-sm text-muted-foreground">{item.category}</p>
                       </div>
-                      <ActionMenu item={item} onEdit={onEdit} onDelete={onDelete} />
+                      <ActionMenu item={item} onEdit={onEdit} />
                     </div>
                      <div className="mt-2">
                         <p className="font-semibold">S/ {item.price.toFixed(2)}</p>
@@ -721,6 +724,9 @@ function ProductDialog({ setDialogOpen, product }: { setDialogOpen: (isOpen: boo
     <DialogContent className="sm:max-w-2xl">
       <DialogHeader>
         <DialogTitle>{product ? 'Editar' : 'Añadir'} Producto</DialogTitle>
+        <DialogDescription>
+            Completa los detalles del producto aquí. Haz clic en guardar cuando termines.
+        </DialogDescription>
       </DialogHeader>
       <form onSubmit={handleSubmit} className="grid gap-4 py-4 max-h-[80vh] overflow-y-auto pr-6">
         <div className="grid grid-cols-4 items-center gap-4">
@@ -969,6 +975,9 @@ function CategoryDialog({ setDialogOpen, category }: { setDialogOpen: (isOpen: b
      <DialogContent className="sm:max-w-[425px]">
       <DialogHeader>
         <DialogTitle>{category ? 'Editar' : 'Añadir'} Categoría</DialogTitle>
+        <DialogDescription>
+            Dale un nombre a tu categoría y haz clic en guardar.
+        </DialogDescription>
       </DialogHeader>
       <form onSubmit={handleSubmit} className="grid gap-4 py-4">
         <div className="grid grid-cols-4 items-center gap-4">
@@ -1194,6 +1203,9 @@ function BannerDialog({ setDialogOpen, banner }: { setDialogOpen: (isOpen: boole
      <DialogContent className="sm:max-w-xl">
       <DialogHeader>
         <DialogTitle>Añadir/Editar Banner</DialogTitle>
+         <DialogDescription>
+            Modifica la información de tu banner promocional.
+        </DialogDescription>
       </DialogHeader>
       <form onSubmit={handleSubmit} className="grid gap-4 py-4 max-h-[80vh] overflow-y-auto pr-6">
         <div className="grid grid-cols-4 items-center gap-4">
@@ -1560,6 +1572,9 @@ function LocationDialog({ setDialogOpen, location }: { setDialogOpen: (isOpen: b
      <DialogContent className="sm:max-w-[480px]">
       <DialogHeader>
         <DialogTitle>{location ? 'Editar' : 'Añadir'} Local</DialogTitle>
+        <DialogDescription>
+            Añade los detalles de la nueva sucursal.
+        </DialogDescription>
       </DialogHeader>
       <form onSubmit={handleSubmit} className="grid gap-4 py-4">
         <div className="grid grid-cols-4 items-center gap-4">
@@ -1591,6 +1606,7 @@ function LocationDialog({ setDialogOpen, location }: { setDialogOpen: (isOpen: b
     
 
     
+
 
 
 
