@@ -2,7 +2,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import type { CartItem, MenuItem, MenuItemExtra } from '@/lib/types';
+import type { MenuItem, MenuItemExtra, CartItem as CartItemType } from '@/lib/types';
 import { useToast } from "@/hooks/use-toast";
 
 export interface CustomerData {
@@ -16,7 +16,7 @@ export interface CustomerData {
 }
 
 interface CartContextType {
-  cartItems: CartItem[];
+  cartItems: CartItemType[];
   addToCart: (item: MenuItem, quantity: number, notes: string, selectedExtras?: MenuItemExtra[]) => void;
   removeFromCart: (cartItemId: string) => void;
   updateItemQuantity: (cartItemId: string, quantity: number) => void;
@@ -40,7 +40,7 @@ const generateCartItemId = (itemId: string, extras: MenuItemExtra[]) => {
 
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [cartItems, setCartItems] = useState<CartItemType[]>([]);
   const [customerData, setCustomerData] = useState<CustomerData | null>(null);
   const { toast } = useToast();
 
@@ -57,7 +57,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             : cartItem
         );
       } else {
-        const newItem: CartItem = {
+        const newItem: CartItemType = {
           ...item,
           id: cartItemId, // The unique ID for this specific combination
           originalId: item.id, // Keep track of the base product ID

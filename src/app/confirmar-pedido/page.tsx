@@ -9,12 +9,12 @@ import { useCart } from '@/context/CartContext';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Separator } from '@/components/ui/separator';
-import { useDoc, useFirestore, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
+import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import type { BusinessInfo, Order, MenuItem } from '@/lib/types';
-import { doc, collection } from 'firebase/firestore';
+import { doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 // Helper function to create a simplified version of cart items for the order
-const getOrderItems = (cartItems: (MenuItem & { quantity: number })[]) => {
+const getOrderItems = (cartItems: (MenuItem & { quantity: number; selectedExtras: MenuItemExtra[] })[]) => {
   return cartItems.map(item => ({
     name: item.name,
     quantity: item.quantity,
@@ -33,7 +33,7 @@ export default function ConfirmarPedidoPage() {
   const businessInfoDoc = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'businessInfo') : null, [firestore]);
   const { data: businessInfo } = useDoc<BusinessInfo>(businessInfoDoc);
 
-  const handleConfirmOrder = () => {
+  const handleConfirmOrder = async () => {
     if (!customerData || !businessInfo?.footerWhatsapp || !firestore) {
         alert('Faltan datos de configuración o del cliente. No se puede procesar el pedido.');
         return;
@@ -50,12 +50,20 @@ export default function ConfirmarPedidoPage() {
       tableNumber: customerData.tableNumber || '',
       paymentMethod: customerData.paymentMethod || '',
       date: new Date().toLocaleDateString('es-PE'),
-      timestamp: new Date(),
+      timestamp: serverTimestamp(), // Use Firestore server timestamp
       total: cartTotal,
-      status: 'Pendiente',
+      status: 'Recibido', // Initial status
       items: getOrderItems(cartItems),
     };
-    addDocumentNonBlocking(ordersCollection, newOrder);
+    
+    try {
+      await addDoc(ordersCollection, newOrder);
+    } catch(error) {
+        console.error("Error saving order to Firestore:", error);
+        alert("Hubo un error al guardar tu pedido. Por favor, inténtalo de nuevo.");
+        return;
+    }
+
 
     // 2. Prepare WhatsApp message
     let deliveryData = '';
@@ -216,7 +224,7 @@ ${totalText}
                                     )}
                                 </div>
                             </div>
-                            <p className="font-semibold text-primary">S/ {item.price.toFixed(2)}</p>
+                            <p className="font-semibold text-primary">S/ {(item.price * item.quantity).toFixed(2)}</p>
                         </div>
                     ))}
                     <Separator />

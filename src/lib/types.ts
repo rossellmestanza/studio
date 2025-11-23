@@ -27,9 +27,10 @@ export interface CartItem extends MenuItem {
   quantity: number;
   notes?: string;
   selectedExtras: MenuItemExtra[];
+  originalId: string; // To track the base product
 }
 
-export type OrderStatus = 'Entregado' | 'Pendiente' | 'En preparación' | 'Cancelado';
+export type OrderStatus = 'Recibido' | 'En preparación' | 'En camino' | 'Entregado' | 'Cancelado';
 export type OrderType = 'delivery' | 'pickup' | 'table';
 
 export interface OrderItem {

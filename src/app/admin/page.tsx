@@ -63,7 +63,7 @@ import {
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import Link from 'next/link';
 import { useAuth, useUser, useFirestore, useStorage, useCollection, useDoc, useMemoFirebase } from '@/firebase';
-import { collection, doc, setDoc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, addDoc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
@@ -120,10 +120,8 @@ export default function AdminDashboard() {
 
   const handleDeleteProduct = async (id: string) => {
     if (!firestore) return;
-    console.log("Attempting to delete product with ID:", id);
     try {
         await deleteDoc(doc(firestore, 'products', id));
-        console.log("Product deleted successfully");
     } catch (error) {
         console.error("Error deleting product: ", error);
     }
@@ -361,13 +359,13 @@ function DashboardOverview() {
 
 function OrderManagement() {
   const firestore = useFirestore();
-  const ordersQuery = useMemoFirebase(() => firestore ? collection(firestore, 'orders') : null, [firestore]);
+  const ordersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'orders'), orderBy('timestamp', 'desc')) : null, [firestore]);
   const { data: orders, isLoading } = useCollection<Order>(ordersQuery);
 
   const getStatusVariant = (status: string) => {
     switch (status) {
       case 'Entregado': return 'default';
-      case 'Pendiente': return 'destructive';
+      case 'Recibido': return 'destructive';
       case 'En preparación': return 'secondary';
       default: return 'outline';
     }
@@ -394,9 +392,11 @@ function OrderManagement() {
           <DropdownMenuSubTrigger>Actualizar estado</DropdownMenuSubTrigger>
           <DropdownMenuPortal>
             <DropdownMenuSubContent>
-              <DropdownMenuItem onClick={() => handleStatusChange(order.id, 'Pendiente')}>Pendiente</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleStatusChange(order.id, 'Recibido')}>Recibido</DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleStatusChange(order.id, 'En preparación')}>En preparación</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleStatusChange(order.id, 'En camino')}>En camino</DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleStatusChange(order.id, 'Entregado')}>Entregado</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleStatusChange(order.id, 'Cancelado')}>Cancelado</DropdownMenuItem>
             </DropdownMenuSubContent>
           </DropdownMenuPortal>
         </DropdownMenuSub>
@@ -423,6 +423,7 @@ function OrderManagement() {
                 <TableHead>Fecha</TableHead>
                 <TableHead>Total</TableHead>
                 <TableHead>Estado</TableHead>
+                <TableHead>Tipo</TableHead>
                 <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
             </TableHeader>
@@ -431,11 +432,12 @@ function OrderManagement() {
                 <TableRow key={order.id}>
                   <TableCell className="font-medium">{order.id.substring(0, 6)}...</TableCell>
                   <TableCell>{order.customer}</TableCell>
-                  <TableCell>{order.date}</TableCell>
+                  <TableCell>{order.timestamp?.toDate ? order.timestamp.toDate().toLocaleString('es-PE') : order.date}</TableCell>
                   <TableCell>S/ {order.total.toFixed(2)}</TableCell>
                   <TableCell>
                     <Badge variant={getStatusVariant(order.status) as any}>{order.status}</Badge>
                   </TableCell>
+                  <TableCell><Badge variant="outline" className="capitalize">{order.orderType}</Badge></TableCell>
                   <TableCell className="text-right">
                     <ActionMenu order={order} />
                   </TableCell>
@@ -460,7 +462,7 @@ function OrderManagement() {
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>
                   <p className="text-muted-foreground">Fecha</p>
-                  <p>{order.date}</p>
+                  <p>{order.timestamp?.toDate ? order.timestamp.toDate().toLocaleString('es-PE') : order.date}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-muted-foreground">Total</p>
@@ -471,6 +473,12 @@ function OrderManagement() {
                   <p className="text-sm text-muted-foreground">Estado</p>
                   <Badge variant={getStatusVariant(order.status) as any} className="w-full justify-center">
                     {order.status}
+                  </Badge>
+                </div>
+                 <div className="mt-3">
+                  <p className="text-sm text-muted-foreground">Tipo</p>
+                  <Badge variant="outline" className="w-full justify-center capitalize">
+                    {order.orderType}
                   </Badge>
                 </div>
             </Card>
@@ -739,7 +747,7 @@ function ProductDialog({ setDialogOpen, product }: { setDialogOpen: (isOpen: boo
     try {
         if (product?.id) {
             const productRef = doc(firestore, 'products', product.id);
-            await updateDoc(productRef, productData);
+            await updateDoc(productRef, productData as { [x: string]: any; });
         } else {
             const productsCollection = collection(firestore, 'products');
             await addDoc(productsCollection, productData);
@@ -1236,7 +1244,7 @@ function BannerDialog({ setDialogOpen, banner }: { setDialogOpen: (isOpen: boole
     };
     
     if (banner?.id) {
-        await updateDoc(doc(firestore, 'banners', banner.id), bannerData);
+        await updateDoc(doc(firestore, 'banners', banner.id), bannerData as { [x: string]: any });
     } else {
         await addDoc(collection(firestore, 'banners'), bannerData);
     }
@@ -1386,7 +1394,7 @@ function LocalManagement({ selectedLocation, setSelectedLocation, isLocationDial
     toast({ title: 'Información del negocio guardada.' });
   }
   
-  const handleContactSubmit = async (e: React.FormEvent) => {
+  const handleContactSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!firestore || !businessInfoDoc) return;
      const dataToSave = {
@@ -1638,7 +1646,7 @@ function LocationDialog({ setDialogOpen, location }: { setDialogOpen: (isOpen: b
     };
     
     if (location?.id) {
-        await updateDoc(doc(firestore, 'locations', location.id), locationData);
+        await updateDoc(doc(firestore, 'locations', location.id), locationData as { [x: string]: any });
     } else {
         await addDoc(collection(firestore, 'locations'), locationData);
     }
