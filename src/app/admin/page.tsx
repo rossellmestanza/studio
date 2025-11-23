@@ -1363,7 +1363,7 @@ function LocalManagement({ selectedLocation, setSelectedLocation, isLocationDial
     }
 
     const dataToSave = { 
-        ...infoFormData,
+        businessName: infoFormData.businessName,
         logoUrl,
     };
     

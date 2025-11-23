@@ -19,6 +19,7 @@ import { signOut } from 'firebase/auth';
 import type { BusinessInfo, User as UserType } from '@/lib/types';
 import { doc } from 'firebase/firestore';
 import { Skeleton } from './ui/skeleton';
+import Image from 'next/image';
 
 
 export default function Header() {
@@ -51,8 +52,12 @@ export default function Header() {
     <header className="sticky top-0 z-40 w-full border-b border-gray-800 bg-black text-white">
       <div className="container mx-auto flex h-20 items-center justify-between px-4">
         <Link href="/" className="flex items-center space-x-2">
-          {isInfoLoading ? <Skeleton className="h-10 w-20" /> : (
-            <span className="text-4xl font-headline" style={{fontFamily: "'Ms Madi', cursive"}}>{businessInfo?.businessName || 'Fly'}</span>
+          {isInfoLoading ? <Skeleton className="h-10 w-24 rounded-md" /> : (
+            businessInfo?.logoUrl ? (
+              <Image src={businessInfo.logoUrl} alt={businessInfo.businessName || 'Logo'} width={120} height={40} className="object-contain h-10 w-auto" />
+            ) : (
+              <span className="text-4xl font-headline" style={{fontFamily: "'Ms Madi', cursive"}}>{businessInfo?.businessName || 'Fly'}</span>
+            )
           )}
         </Link>
         <nav className="hidden md:flex items-center space-x-6">

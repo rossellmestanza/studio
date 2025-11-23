@@ -7,6 +7,7 @@ import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { BusinessInfo } from '@/lib/types';
 import { Skeleton } from './ui/skeleton';
+import Image from 'next/image';
 
 export default function Footer() {
   const firestore = useFirestore();
@@ -20,9 +21,13 @@ export default function Footer() {
           {/* Columna Izquierda */}
           <div className="space-y-4 flex flex-col items-center md:items-start">
             <Link href="/" className="inline-block">
-              {isLoading ? <Skeleton className="h-12 w-24"/> : 
+              {isLoading ? (
+                <Skeleton className="h-12 w-24 rounded-md"/>
+              ) : businessInfo?.logoUrl ? (
+                <Image src={businessInfo.logoUrl} alt={businessInfo.businessName || 'Logo'} width={100} height={100} className="rounded-md object-contain h-24 w-auto" />
+              ) : (
                 <span className="text-5xl font-headline" style={{fontFamily: "'Ms Madi', cursive"}}>{businessInfo?.businessName || 'Fly'}</span>
-              }
+              )}
             </Link>
             <p className="text-gray-400 max-w-xs mx-auto md:mx-0">
               Los mejores sabores de casa, preparados con amor y dedicación.
