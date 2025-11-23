@@ -70,6 +70,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const monthlyRevenueData = [
     { month: 'Enero', revenue: 1200 },
@@ -95,6 +96,9 @@ export default function AdminDashboard() {
   const auth = useAuth();
   const firestore = useFirestore();
   const router = useRouter();
+
+  const businessInfoDoc = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'businessInfo') : null, [firestore]);
+  const { data: businessInfo, isLoading: isInfoLoading } = useDoc<BusinessInfo>(businessInfoDoc);
 
   const handleSignOut = async () => {
     if (auth) {
@@ -181,7 +185,11 @@ export default function AdminDashboard() {
     <div className="flex min-h-screen w-full bg-muted/40">
       <aside className="hidden w-64 flex-col border-r bg-background sm:flex">
         <div className="border-b p-6">
-           <h1 className="text-2xl font-bold" style={{fontFamily: "'Ms Madi', cursive"}}>Fly Admin</h1>
+            {isInfoLoading ? (
+              <Skeleton className="h-8 w-32" />
+            ) : (
+              <h1 className="text-2xl font-bold" style={{fontFamily: "'Ms Madi', cursive"}}>{businessInfo?.businessName || 'Admin'}</h1>
+            )}
         </div>
         <NavLinks />
       </aside>
@@ -198,7 +206,11 @@ export default function AdminDashboard() {
                  <SheetHeader className="border-b p-6">
                     <SheetTitle>
                         <Link href="#" className="flex items-center gap-2 font-semibold">
-                        <h1 className="text-2xl font-bold" style={{fontFamily: "'Ms Madi', cursive"}}>Fly Admin</h1>
+                        {isInfoLoading ? (
+                          <Skeleton className="h-8 w-32" />
+                        ) : (
+                          <h1 className="text-2xl font-bold" style={{fontFamily: "'Ms Madi', cursive"}}>{businessInfo?.businessName || 'Admin'}</h1>
+                        )}
                         </Link>
                     </SheetTitle>
                  </SheetHeader>
@@ -1362,9 +1374,9 @@ function LocalManagement({ selectedLocation, setSelectedLocation, isLocationDial
        });
     }
 
-    const dataToSave = { 
-        businessName: infoFormData.businessName,
-        logoUrl,
+    const dataToSave: Partial<BusinessInfo> = {
+      ...infoFormData,
+      logoUrl,
     };
     
     await setDoc(businessInfoDoc, dataToSave, { merge: true });
