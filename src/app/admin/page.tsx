@@ -630,7 +630,7 @@ function ProductDialog({ setDialogOpen, product }: { setDialogOpen: (isOpen: boo
       setExtras(product.extras || []);
       setImagePreview(product.image || null);
     } else {
-      setFormData({price: 0, originalPrice: undefined});
+      setFormData({price: 0});
       setExtras([]);
       setImagePreview(null);
     }
@@ -712,12 +712,16 @@ function ProductDialog({ setDialogOpen, product }: { setDialogOpen: (isOpen: boo
         name: formData.name || '',
         description: formData.description || '',
         price: parseFloat(String(formData.price)) || 0,
-        originalPrice: parseFloat(String(formData.originalPrice)) || undefined,
         category: formData.category || '',
         image: imageUrl,
         imageHint: formData.imageHint || '',
         extras: extras,
     };
+    
+    const originalPrice = parseFloat(String(formData.originalPrice));
+    if (!isNaN(originalPrice) && originalPrice > 0) {
+        productData.originalPrice = originalPrice;
+    }
 
     try {
         if (product?.id) {
@@ -1643,3 +1647,5 @@ function LocationDialog({ setDialogOpen, location }: { setDialogOpen: (isOpen: b
     </DialogContent>
   );
 }
+
+    
