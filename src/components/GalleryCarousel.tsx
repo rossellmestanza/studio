@@ -12,41 +12,18 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import React from 'react';
 import Autoplay from "embla-carousel-autoplay"
-
-const heroItems = [
-  {
-    id: "hero-delivery",
-    title: "DELIVERY GRATIS",
-    description: "Todo el día en compras mayores a S/. 30",
-    buttonText: "¡ORDENA YA!",
-    imageUrl: "https://static.wixstatic.com/media/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png/v1/fill/w_568,h_320,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/9755d8_08527ef57aba40f99b1b3478991bc73a~mv2.png",
-    imageHint: "delivery chicken",
-    href: "/carta",
-  },
-  {
-    id: "hero-pollo-brasa",
-    title: "EL FAVORITO DE TODOS",
-    description: "Nuestro jugoso Pollo a la Brasa con papas y ensalada.",
-    buttonText: "VER PROMOCIONES",
-    imageUrl: "https://cdn.cuponidad.pe/images/Deals/polloalalenalinceofertas.jpg",
-    imageHint: "roasted chicken",
-    href: "/carta",
-  },
-  {
-    id: "hero-lomo-saltado",
-    title: "SABOR PERUANO",
-    description: "Prueba nuestro Lomo Saltado, un clásico irresistible.",
-    buttonText: "VER EN LA CARTA",
-    imageUrl: "https://i.ytimg.com/vi/KfIK9IQixg4/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLAAkLhHY0GcxJOGvuJ6GlGqslnXRA",
-    imageHint: "lomo saltado",
-    href: "/carta",
-  },
-];
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import type { Banner } from '@/lib/types';
+import { collection } from 'firebase/firestore';
+import { Skeleton } from './ui/skeleton';
 
 export default function GalleryCarousel() {
   const plugin = React.useRef(
     Autoplay({ delay: 5000, stopOnInteraction: true })
   )
+  const firestore = useFirestore();
+  const bannersQuery = useMemoFirebase(() => firestore ? collection(firestore, 'banners') : null, [firestore]);
+  const { data: banners, isLoading } = useCollection<Banner>(bannersQuery);
 
   return (
     <section className="w-full relative">
@@ -59,7 +36,14 @@ export default function GalleryCarousel() {
         className="w-full"
       >
         <CarouselContent>
-          {heroItems.map((item) => (
+          {isLoading ? (
+            <CarouselItem>
+              <div className="relative w-full" style={{ height: 'calc(100vh - 80px)' }}>
+                <Skeleton className="h-full w-full" />
+              </div>
+            </CarouselItem>
+          ) : (
+            banners && banners.map((item) => (
             <CarouselItem key={item.id}>
               <div className="relative w-full" style={{ height: 'calc(100vh - 80px)' }}>
                 <Image
@@ -68,8 +52,7 @@ export default function GalleryCarousel() {
                   fill
                   sizes="100vw"
                   className="object-cover"
-                  data-ai-hint={item.imageHint}
-                  priority={item.id === 'hero-delivery'}
+                  priority={banners[0] && item.id === banners[0].id}
                 />
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4 bg-black/40">
                   <h2 className="text-4xl md:text-6xl font-extrabold text-white" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.7)' }}>
@@ -84,7 +67,7 @@ export default function GalleryCarousel() {
                 </div>
               </div>
             </CarouselItem>
-          ))}
+          )))}
         </CarouselContent>
         <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 text-black bg-yellow-400 hover:bg-yellow-500 border-none hidden md:inline-flex" />
         <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 text-black bg-yellow-400 hover:bg-yellow-500 border-none hidden md:inline-flex" />
