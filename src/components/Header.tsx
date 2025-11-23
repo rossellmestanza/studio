@@ -13,10 +13,10 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
-import { Menu, User, LogOut } from 'lucide-react';
+import { Menu, User, LogOut, LayoutDashboard } from 'lucide-react';
 import { useUser, useAuth, useFirestore, useMemoFirebase, useDoc } from '@/firebase';
 import { signOut } from 'firebase/auth';
-import type { BusinessInfo } from '@/lib/types';
+import type { BusinessInfo, User as UserType } from '@/lib/types';
 import { doc } from 'firebase/firestore';
 import { Skeleton } from './ui/skeleton';
 
@@ -29,6 +29,10 @@ export default function Header() {
 
   const businessInfoDoc = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'businessInfo') : null, [firestore]);
   const { data: businessInfo, isLoading: isInfoLoading } = useDoc<BusinessInfo>(businessInfoDoc);
+  
+  const userDocRef = useMemoFirebase(() => (firestore && user) ? doc(firestore, 'users', user.uid) : null, [firestore, user]);
+  const { data: userData } = useDoc<UserType>(userDocRef);
+
 
   const handleSignOut = () => {
     if (!auth) return;
@@ -40,6 +44,8 @@ export default function Header() {
     { href: '/carta', label: 'CARTA' },
     { href: '/locales', label: 'LOCALES' },
   ];
+  
+  const isAdmin = userData?.role === 'admin';
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-gray-800 bg-black text-white">
@@ -79,6 +85,14 @@ export default function Header() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-black text-white border-gray-700">
+                   {isAdmin && (
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin" className="cursor-pointer">
+                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                        <span>Dashboard</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem asChild>
                     <Link href="/micuenta" className="cursor-pointer">
                       <User className="mr-2 h-4 w-4" />
@@ -116,6 +130,21 @@ export default function Header() {
                   </DropdownMenuItem>
                 ))}
                  {user && (
+                  <>
+                    <DropdownMenuSeparator className="bg-gray-700" />
+                     {isAdmin && (
+                       <DropdownMenuItem asChild>
+                         <Link
+                          href="/admin"
+                          className={cn(
+                            "py-2 px-4 text-lg justify-center",
+                            pathname === "/admin" ? "text-primary bg-gray-800" : ""
+                          )}
+                        >
+                          DASHBOARD
+                        </Link>
+                       </DropdownMenuItem>
+                     )}
                     <DropdownMenuItem asChild>
                        <Link
                         href="/micuenta"
@@ -127,6 +156,7 @@ export default function Header() {
                         MI CUENTA
                       </Link>
                     </DropdownMenuItem>
+                  </>
                   )}
                   <DropdownMenuSeparator className="bg-gray-700" />
                   {!user && !isUserLoading ? (
