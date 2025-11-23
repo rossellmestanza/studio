@@ -73,14 +73,6 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 
-const monthlyRevenueData = [
-    { month: 'Enero', revenue: 1200 },
-    { month: 'Febrero', revenue: 1800 },
-    { month: 'Marzo', revenue: 1500 },
-    { month: 'Abril', revenue: 2100 },
-    { month: 'Mayo', revenue: 1900 },
-    { month: 'Junio', revenue: 2300 },
-];
 
 
 export default function AdminDashboard() {
@@ -268,22 +260,26 @@ function DashboardOverview() {
     }, [orders]);
 
     const monthlyRevenue = useMemo(() => {
-        const currentMonthRevenue = { 
-            month: new Date().toLocaleString('es-PE', { month: 'long' }),
-            revenue: totalRevenue 
-        };
-        const existingMonthIndex = monthlyRevenueData.findIndex(d => d.month.toLowerCase() === currentMonthRevenue.month.toLowerCase());
-        
-        let updatedData = [...monthlyRevenueData];
-        if (existingMonthIndex !== -1) {
-            updatedData[existingMonthIndex] = {
-                ...updatedData[existingMonthIndex],
-                revenue: currentMonthRevenue.revenue
-            };
+        const data: { [key: string]: number } = {};
+        if (orders) {
+            orders.filter(o => o.status === 'Entregado').forEach(order => {
+                const date = order.timestamp?.toDate();
+                if(date) {
+                    const month = date.toLocaleString('es-PE', { month: 'long' });
+                    const capitalizedMonth = month.charAt(0).toUpperCase() + month.slice(1);
+                    if (!data[capitalizedMonth]) {
+                        data[capitalizedMonth] = 0;
+                    }
+                    data[capitalizedMonth] += order.total;
+                }
+            });
         }
         
-        return updatedData;
-    }, [totalRevenue]);
+        return Object.keys(data).map(month => ({
+            month,
+            revenue: data[month]
+        }));
+    }, [orders]);
 
     if (ordersLoading || productsLoading || categoriesLoading) {
         return <div>Cargando dashboard...</div>;
@@ -333,7 +329,7 @@ function DashboardOverview() {
             <Card>
                 <CardHeader>
                     <CardTitle>Resumen de Ganancias</CardTitle>
-                    <CardDescription>Gráfico de ganancias de los últimos 6 meses.</CardDescription>
+                    <CardDescription>Gráfico de ganancias por mes.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <ResponsiveContainer width="100%" height={300}>
