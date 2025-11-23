@@ -71,6 +71,7 @@ import Image from 'next/image';
 import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
 
 const monthlyRevenueData = [
     { month: 'Enero', revenue: 1200 },
@@ -1292,6 +1293,7 @@ function BannerDialog({ setDialogOpen, banner }: { setDialogOpen: (isOpen: boole
 function LocalManagement({ selectedLocation, setSelectedLocation, isLocationDialogOpen, setIsLocationDialogOpen }: { selectedLocation: Location | null; setSelectedLocation: (location: Location | null) => void; isLocationDialogOpen: boolean; setIsLocationDialogOpen: (isOpen: boolean) => void; }) {
   const firestore = useFirestore();
   const storage = useStorage();
+  const { toast } = useToast();
   const businessInfoDoc = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'businessInfo') : null, [firestore]);
   const { data: businessInfo, isLoading: infoLoading } = useDoc<BusinessInfo>(businessInfoDoc);
   const locationsQuery = useMemoFirebase(() => firestore ? collection(firestore, 'locations') : null, [firestore]);
@@ -1381,7 +1383,7 @@ function LocalManagement({ selectedLocation, setSelectedLocation, isLocationDial
     
     await setDoc(businessInfoDoc, dataToSave, { merge: true });
     setIsLogoUploading(false);
-    alert('Información del negocio guardada.');
+    toast({ title: 'Información del negocio guardada.' });
   }
   
   const handleContactSubmit = async (e: React.FormEvent) => {
@@ -1396,7 +1398,7 @@ function LocalManagement({ selectedLocation, setSelectedLocation, isLocationDial
         instagramUrl: infoFormData.instagramUrl,
     };
     await setDoc(businessInfoDoc, dataToSave, { merge: true });
-    alert('Información de contacto guardada.');
+    toast({ title: 'Información de contacto guardada.' });
   }
 
   const ActionMenu = ({ loc }: { loc: Location }) => (
