@@ -81,6 +81,8 @@ export interface BusinessInfo {
     footerHours: string;
     footerPhone: string;
     footerWhatsapp: string;
+    facebookUrl?: string;
+    instagramUrl?: string;
 }
 
 export interface User {

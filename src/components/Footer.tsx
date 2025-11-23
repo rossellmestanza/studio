@@ -65,10 +65,10 @@ export default function Footer() {
           <div className="space-y-4">
             <h3 className="font-bold text-lg text-white uppercase tracking-wider">Síguenos</h3>
             <div className="flex justify-center md:justify-start space-x-4">
-              <Link href="#" className="text-gray-400 hover:text-white bg-gray-800 p-3 rounded-full transition-colors">
+              <Link href={businessInfo?.facebookUrl || '#'} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white bg-gray-800 p-3 rounded-full transition-colors">
                 <Facebook className="h-6 w-6" />
               </Link>
-              <Link href="#" className="text-gray-400 hover:text-white bg-gray-800 p-3 rounded-full transition-colors">
+              <Link href={businessInfo?.instagramUrl || '#'} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white bg-gray-800 p-3 rounded-full transition-colors">
                 <Instagram className="h-6 w-6" />
               </Link>
             </div>

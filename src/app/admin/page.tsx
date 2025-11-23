@@ -37,7 +37,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Home, ShoppingBag, List, PlusCircle, MoreHorizontal, Trash2, Edit, ClipboardList, DollarSign, Store, Upload, Clock, Phone, MapPin, Menu as MenuIcon, LogOut, Image as ImageIcon, MessageCircle } from 'lucide-react';
+import { Home, ShoppingBag, List, PlusCircle, MoreHorizontal, Trash2, Edit, ClipboardList, DollarSign, Store, Upload, Clock, Phone, MapPin, Menu as MenuIcon, LogOut, Image as ImageIcon, MessageCircle, Facebook, Instagram } from 'lucide-react';
 import type { MenuItem, MenuItemExtra, Order, Banner, Location, MenuCategory, BusinessInfo } from '@/lib/types';
 import {
   DropdownMenu,
@@ -1392,6 +1392,8 @@ function LocalManagement({ selectedLocation, setSelectedLocation, isLocationDial
         footerHours: infoFormData.footerHours,
         footerPhone: infoFormData.footerPhone,
         footerWhatsapp: infoFormData.footerWhatsapp,
+        facebookUrl: infoFormData.facebookUrl,
+        instagramUrl: infoFormData.instagramUrl,
     };
     await setDoc(businessInfoDoc, dataToSave, { merge: true });
     alert('Información de contacto guardada.');
@@ -1496,6 +1498,20 @@ function LocalManagement({ selectedLocation, setSelectedLocation, isLocationDial
                <div className="relative">
                 <MessageCircle className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input id="footerWhatsapp" className="pl-10" value={infoFormData.footerWhatsapp || ''} onChange={handleInfoChange} />
+              </div>
+            </div>
+             <div className="space-y-2">
+              <Label htmlFor="facebookUrl">URL de Facebook</Label>
+               <div className="relative">
+                <Facebook className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input id="facebookUrl" placeholder="https://facebook.com/turestaurante" className="pl-10" value={infoFormData.facebookUrl || ''} onChange={handleInfoChange} />
+              </div>
+            </div>
+             <div className="space-y-2">
+              <Label htmlFor="instagramUrl">URL de Instagram</Label>
+               <div className="relative">
+                <Instagram className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input id="instagramUrl" placeholder="https://instagram.com/turestaurante" className="pl-10" value={infoFormData.instagramUrl || ''} onChange={handleInfoChange} />
               </div>
             </div>
             <Button type="submit">Actualizar Contacto</Button>
