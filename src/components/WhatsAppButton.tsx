@@ -1,6 +1,10 @@
 "use client";
 
 import Link from 'next/link';
+import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import type { BusinessInfo } from '@/lib/types';
+
 
 const WhatsAppIcon = () => (
     <svg
@@ -20,8 +24,15 @@ const WhatsAppIcon = () => (
     </svg>
   );
 
-export default function WhatsAppButton({ phoneNumber }: { phoneNumber: string }) {
-  const whatsappLink = `https://wa.me/${phoneNumber.replace(/\s/g, '')}`;
+export default function WhatsAppButton() {
+  const firestore = useFirestore();
+  const businessInfoDoc = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'businessInfo') : null, [firestore]);
+  const { data: businessInfo } = useDoc<BusinessInfo>(businessInfoDoc);
+  
+  const phoneNumber = businessInfo?.footerWhatsapp || '';
+  if (!phoneNumber) return null;
+
+  const whatsappLink = `https://wa.me/${phoneNumber.replace(/\D/g, '')}`;
 
   return (
     <Link
