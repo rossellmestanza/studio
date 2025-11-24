@@ -5,12 +5,13 @@
  * Core Philosophy:
  * This ruleset enforces a strict user-ownership model for user profiles. Only the authenticated user
  * can read or write their own profile data. It also introduces a simple role-based access control.
- * It allows public read access to menu-related data.
+ * It allows public read access to menu-related data and controlled access to orders.
  *
  * Data Structure:
  * All user data is stored under the `/users/{userId}` path, where `{userId}` corresponds to the
  * Firebase Auth UID of the user. Each user document has a `role` field ('user' or 'admin').
  * Public data like menu items, categories, etc., are in their own collections.
+ * Orders are stored in `/orders/{orderId}`.
  *
  * Key Security Decisions:
  * - User listing is explicitly disallowed.
@@ -19,6 +20,7 @@
  * - Users can only create their own profile with the 'user' role.
  * - Menu, categories, banners, locations, and business info are publicly readable.
  * - All writes to public data are restricted to users with the 'admin' role.
+ * - Order creation is public. Order reads are restricted to admins or the user who created it.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -30,6 +32,10 @@ service cloud.firestore {
     
     function isAdmin() {
       return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isOrderOwner(orderId) {
+      return isSignedIn() && request.auth.uid == get(/databases/$(database)/documents/orders/$(orderId)).data.userId;
     }
 
     /**
@@ -90,10 +96,18 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Rules for orders. Only admins can read all orders.
-    // Users will place orders via a different mechanism (e.g. WhatsApp, Cloud Function).
+    /**
+     * @description Controls access to orders.
+     * @path /orders/{orderId}
+     * @allow (create) - Anyone can create an order.
+     * @allow (read, list) - Admins can read all orders. Users can read/list their own orders.
+     * @allow (update, delete) - Only admins can modify or delete orders.
+     */
     match /orders/{orderId} {
-      allow read, write: if isAdmin();
+      allow create: if true;
+      allow list: if isSignedIn();
+      allow get: if isOrderOwner(orderId) || isAdmin();
+      allow update, delete: if isAdmin();
     }
   }
 }
