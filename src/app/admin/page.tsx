@@ -261,24 +261,30 @@ function DashboardOverview() {
 
     const monthlyRevenue = useMemo(() => {
         const data: { [key: string]: number } = {};
+        const currentMonth = new Date().toLocaleString('es-PE', { month: 'long' });
+        const capitalizedCurrentMonth = currentMonth.charAt(0).toUpperCase() + currentMonth.slice(1);
+        
         if (orders) {
             orders.filter(o => o.status === 'Entregado').forEach(order => {
                 const date = order.timestamp?.toDate();
                 if(date) {
                     const month = date.toLocaleString('es-PE', { month: 'long' });
-                    const capitalizedMonth = month.charAt(0).toUpperCase() + month.slice(1);
-                    if (!data[capitalizedMonth]) {
-                        data[capitalizedMonth] = 0;
+                     if (month === currentMonth) {
+                        if (!data[capitalizedCurrentMonth]) {
+                            data[capitalizedCurrentMonth] = 0;
+                        }
+                        data[capitalizedCurrentMonth] += order.total;
                     }
-                    data[capitalizedMonth] += order.total;
                 }
             });
         }
         
-        return Object.keys(data).map(month => ({
-            month,
-            revenue: data[month]
-        }));
+        const chartData = [{
+            month: capitalizedCurrentMonth,
+            revenue: data[capitalizedCurrentMonth] || 0
+        }]
+
+        return chartData;
     }, [orders]);
 
     if (ordersLoading || productsLoading || categoriesLoading) {
@@ -295,7 +301,6 @@ function DashboardOverview() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">S/ {totalRevenue.toFixed(2)}</div>
-                        <p className="text-xs text-muted-foreground">+20.1% desde el mes pasado</p>
                     </CardContent>
                 </Card>
                 <Card>
@@ -328,8 +333,8 @@ function DashboardOverview() {
             </div>
             <Card>
                 <CardHeader>
-                    <CardTitle>Resumen de Ganancias</CardTitle>
-                    <CardDescription>Gráfico de ganancias por mes.</CardDescription>
+                    <CardTitle>Resumen de Ganancias del Mes</CardTitle>
+                    <CardDescription>Gráfico de ganancias para el mes actual.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <ResponsiveContainer width="100%" height={300}>
@@ -357,6 +362,13 @@ function OrderManagement() {
   const firestore = useFirestore();
   const ordersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'orders'), orderBy('timestamp', 'desc')) : null, [firestore]);
   const { data: orders, isLoading } = useCollection<Order>(ordersQuery);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+
+  const handleViewDetails = (order: Order) => {
+    setSelectedOrder(order);
+    setIsDetailOpen(true);
+  };
 
   const getStatusVariant = (status: string) => {
     switch (status) {
@@ -383,7 +395,7 @@ function OrderManagement() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem>Ver detalles</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleViewDetails(order)}>Ver detalles</DropdownMenuItem>
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>Actualizar estado</DropdownMenuSubTrigger>
           <DropdownMenuPortal>
@@ -403,85 +415,187 @@ function OrderManagement() {
   if (isLoading) return <div>Cargando pedidos...</div>
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Pedidos</CardTitle>
-        <CardDescription>Gestiona los pedidos de tus clientes.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        {/* Vista de tabla para pantallas medianas y grandes */}
-        <div className="hidden md:block">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID Pedido</TableHead>
-                <TableHead>Cliente</TableHead>
-                <TableHead>Fecha</TableHead>
-                <TableHead>Total</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {orders && orders.map((order) => (
-                <TableRow key={order.id}>
-                  <TableCell className="font-medium">{order.id.substring(0, 6)}...</TableCell>
-                  <TableCell>{order.customer}</TableCell>
-                  <TableCell>{order.timestamp?.toDate ? order.timestamp.toDate().toLocaleString('es-PE') : order.date}</TableCell>
-                  <TableCell>S/ {order.total.toFixed(2)}</TableCell>
-                  <TableCell>
-                    <Badge variant={getStatusVariant(order.status) as any}>{order.status}</Badge>
-                  </TableCell>
-                  <TableCell><Badge variant="outline" className="capitalize">{order.orderType}</Badge></TableCell>
-                  <TableCell className="text-right">
-                    <ActionMenu order={order} />
-                  </TableCell>
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle>Pedidos</CardTitle>
+          <CardDescription>Gestiona los pedidos de tus clientes.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {/* Vista de tabla para pantallas medianas y grandes */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>ID Pedido</TableHead>
+                  <TableHead>Cliente</TableHead>
+                  <TableHead>Fecha</TableHead>
+                  <TableHead>Total</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {orders && orders.map((order) => (
+                  <TableRow key={order.id}>
+                    <TableCell className="font-medium">{order.id.substring(0, 6)}...</TableCell>
+                    <TableCell>{order.customer}</TableCell>
+                    <TableCell>{order.timestamp?.toDate ? order.timestamp.toDate().toLocaleString('es-PE') : order.date}</TableCell>
+                    <TableCell>S/ {order.total.toFixed(2)}</TableCell>
+                    <TableCell>
+                      <Badge variant={getStatusVariant(order.status) as any}>{order.status}</Badge>
+                    </TableCell>
+                    <TableCell><Badge variant="outline" className="capitalize">{order.orderType}</Badge></TableCell>
+                    <TableCell className="text-right">
+                      <ActionMenu order={order} />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
 
-        {/* Vista de tarjetas para pantallas pequeñas */}
-        <div className="grid gap-4 md:hidden">
-          {orders && orders.map((order) => (
-            <Card key={order.id} className="p-4">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="font-bold">{order.customer}</p>
-                  <p className="text-sm text-muted-foreground">#{order.id.substring(0, 6)}</p>
+          {/* Vista de tarjetas para pantallas pequeñas */}
+          <div className="grid gap-4 md:hidden">
+            {orders && orders.map((order) => (
+              <Card key={order.id} className="p-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="font-bold">{order.customer}</p>
+                    <p className="text-sm text-muted-foreground">#{order.id.substring(0, 6)}</p>
+                  </div>
+                  <ActionMenu order={order} />
                 </div>
-                <ActionMenu order={order} />
-              </div>
-              <Separator className="my-3" />
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <div>
-                  <p className="text-muted-foreground">Fecha</p>
-                  <p>{order.timestamp?.toDate ? order.timestamp.toDate().toLocaleString('es-PE') : order.date}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-muted-foreground">Total</p>
-                  <p className="font-semibold">S/ {order.total.toFixed(2)}</p>
-                </div>
-              </div>
-               <div className="mt-3">
-                  <p className="text-sm text-muted-foreground">Estado</p>
-                  <Badge variant={getStatusVariant(order.status) as any} className="w-full justify-center">
-                    {order.status}
-                  </Badge>
+                <Separator className="my-3" />
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Fecha</p>
+                    <p>{order.timestamp?.toDate ? order.timestamp.toDate().toLocaleString('es-PE') : order.date}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-muted-foreground">Total</p>
+                    <p className="font-semibold">S/ {order.total.toFixed(2)}</p>
+                  </div>
                 </div>
                  <div className="mt-3">
-                  <p className="text-sm text-muted-foreground">Tipo</p>
-                  <Badge variant="outline" className="w-full justify-center capitalize">
-                    {order.orderType}
-                  </Badge>
-                </div>
-            </Card>
-          ))}
+                    <p className="text-sm text-muted-foreground">Estado</p>
+                    <Badge variant={getStatusVariant(order.status) as any} className="w-full justify-center">
+                      {order.status}
+                    </Badge>
+                  </div>
+                   <div className="mt-3">
+                    <p className="text-sm text-muted-foreground">Tipo</p>
+                    <Badge variant="outline" className="w-full justify-center capitalize">
+                      {order.orderType}
+                    </Badge>
+                  </div>
+              </Card>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+      <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
+        {selectedOrder && (
+          <OrderDetailDialog order={selectedOrder} />
+        )}
+      </Dialog>
+    </>
+  );
+}
+
+
+function OrderDetailDialog({ order }: { order: Order }) {
+  if (!order) return null;
+
+  const renderCustomerData = () => {
+    switch (order.orderType) {
+      case 'delivery':
+        return (
+          <>
+            <p><strong>Cliente:</strong> {order.customer}</p>
+            <p><strong>Teléfono:</strong> {order.phone}</p>
+            <p><strong>Dirección:</strong> {order.address}</p>
+            {order.reference && <p><strong>Referencia:</strong> {order.reference}</p>}
+            <p><strong>Método de Pago:</strong> {order.paymentMethod}</p>
+          </>
+        );
+      case 'pickup':
+        return (
+          <>
+            <p><strong>Tipo:</strong> Para Llevar</p>
+            <p><strong>Cliente:</strong> {order.customer}</p>
+            <p><strong>Teléfono:</strong> {order.phone}</p>
+          </>
+        );
+      case 'table':
+        return (
+          <>
+            <p><strong>Tipo:</strong> Consumo en Mesa</p>
+            <p><strong>Cliente:</strong> {order.customer}</p>
+            <p><strong>N° de Mesa:</strong> {order.tableNumber}</p>
+          </>
+        );
+      default:
+        return <p><strong>Cliente:</strong> {order.customer}</p>;
+    }
+  };
+
+  return (
+    <DialogContent className="sm:max-w-md">
+      <DialogHeader>
+        <DialogTitle>Detalle del Pedido #{order.id.substring(0, 6)}</DialogTitle>
+        <DialogDescription>
+          Fecha: {order.timestamp?.toDate ? order.timestamp.toDate().toLocaleString('es-PE') : order.date}
+        </DialogDescription>
+      </DialogHeader>
+      <div className="max-h-[60vh] overflow-y-auto pr-4">
+        <div className="space-y-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Información del Cliente</CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm space-y-1">
+              {renderCustomerData()}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Productos</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Cant.</TableHead>
+                    <TableHead>Producto</TableHead>
+                    <TableHead className="text-right">Total</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {order.items.map((item, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{item.quantity}</TableCell>
+                      <TableCell>
+                        <p className="font-medium">{item.name}</p>
+                        {item.extras && <p className="text-xs text-muted-foreground">{item.extras}</p>}
+                      </TableCell>
+                      <TableCell className="text-right">S/ {(item.price * item.quantity).toFixed(2)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+      <DialogFooter className="pt-4 sm:justify-between">
+        <div className="text-lg font-bold">Total: S/ {order.total.toFixed(2)}</div>
+        <Badge variant={order.status === 'Entregado' ? 'default' : order.status === 'Recibido' ? 'destructive' : 'secondary' as any}>
+          {order.status}
+        </Badge>
+      </DialogFooter>
+    </DialogContent>
   );
 }
 
