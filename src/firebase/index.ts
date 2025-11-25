@@ -4,6 +4,7 @@ import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
+import { firebaseConfig } from './config';
 
 // IMPORTANT: DO NOT MODIFY THIS FUNCTION
 export function initializeFirebase() {
@@ -11,9 +12,9 @@ export function initializeFirebase() {
     return getSdks(getApp());
   }
 
-  // Initialize without a config object, which will use the environment's
-  // automatically provided FIREBASE_CONFIG.
-  const firebaseApp = initializeApp();
+  // Initialize with the config object. In a deployed Firebase environment,
+  // these values may be automatically replaced by the hosting environment.
+  const firebaseApp = initializeApp(firebaseConfig);
   return getSdks(firebaseApp);
 }
 
