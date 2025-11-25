@@ -11,7 +11,7 @@ import Image from 'next/image';
 import { Separator } from '@/components/ui/separator';
 import { useDoc, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import type { BusinessInfo, Order, MenuItem, MenuItemExtra, User } from '@/lib/types';
-import { doc, collection, addDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
+import { doc, collection, addDoc, serverTimestamp, writeBatch, increment } from 'firebase/firestore';
 
 // Helper function to create a simplified version of cart items for the order
 const getOrderItems = (cartItems: (MenuItem & { quantity: number; selectedExtras: MenuItemExtra[] })[]) => {
@@ -67,9 +67,8 @@ export default function ConfirmarPedidoPage() {
 
         // If user is logged in, update their points
         if (user && userData && userDocRef) {
-            const pointsEarned = Math.floor(cartTotal);
-            const newTotalPoints = (userData.points || 0) + pointsEarned;
-            batch.update(userDocRef, { points: newTotalPoints });
+            // Add 1 point per completed order
+            batch.update(userDocRef, { points: increment(1) });
         }
         
         await batch.commit();

@@ -37,8 +37,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Home, ShoppingBag, List, PlusCircle, MoreHorizontal, Trash2, Edit, ClipboardList, DollarSign, Store, Upload, Clock, Phone, MapPin, Menu as MenuIcon, LogOut, Image as ImageIcon, MessageCircle, Facebook, Instagram } from 'lucide-react';
-import type { MenuItem, MenuItemExtra, Order, Banner, Location, MenuCategory, BusinessInfo } from '@/lib/types';
+import { Home, ShoppingBag, List, PlusCircle, MoreHorizontal, Trash2, Edit, ClipboardList, DollarSign, Store, Upload, Clock, Phone, MapPin, Menu as MenuIcon, LogOut, Image as ImageIcon, MessageCircle, Facebook, Instagram, Users, Gift } from 'lucide-react';
+import type { MenuItem, MenuItemExtra, Order, Banner, Location, MenuCategory, BusinessInfo, User } from '@/lib/types';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -141,6 +141,8 @@ export default function AdminDashboard() {
         return <BannerManagement onEdit={handleEditBanner} />;
       case 'local':
         return <LocalManagement selectedLocation={selectedLocation} setSelectedLocation={setSelectedLocation} isLocationDialogOpen={isLocationDialogOpen} setIsLocationDialogOpen={setIsLocationDialogOpen} />;
+      case 'customers':
+        return <CustomerManagement />;
       case 'dashboard':
       default:
         return <DashboardOverview />;
@@ -154,6 +156,7 @@ export default function AdminDashboard() {
     { id: 'categories', label: 'Categorías', icon: List },
     { id: 'banners', label: 'Banners', icon: ImageIcon },
     { id: 'local', label: 'Mi Local', icon: Store },
+    { id: 'customers', label: 'Clientes', icon: Users },
   ];
 
   const NavLinks = ({ isSheet = false }: { isSheet?: boolean }) => (
@@ -250,10 +253,12 @@ function DashboardOverview() {
     const ordersQuery = useMemoFirebase(() => firestore ? collection(firestore, 'orders') : null, [firestore]);
     const productsQuery = useMemoFirebase(() => firestore ? collection(firestore, 'products') : null, [firestore]);
     const categoriesQuery = useMemoFirebase(() => firestore ? collection(firestore, 'categories') : null, [firestore]);
+    const usersQuery = useMemoFirebase(() => firestore ? collection(firestore, 'users') : null, [firestore]);
 
     const { data: orders, isLoading: ordersLoading } = useCollection<Order>(ordersQuery);
     const { data: products, isLoading: productsLoading } = useCollection<MenuItem>(productsQuery);
     const { data: categories, isLoading: categoriesLoading } = useCollection<MenuCategory>(categoriesQuery);
+    const { data: users, isLoading: usersLoading } = useCollection<User>(usersQuery);
 
     const totalRevenue = useMemo(() => {
         return orders?.filter(o => o.status === 'Entregado').reduce((sum, o) => sum + o.total, 0) || 0;
@@ -287,7 +292,7 @@ function DashboardOverview() {
         return chartData;
     }, [orders]);
 
-    if (ordersLoading || productsLoading || categoriesLoading) {
+    if (ordersLoading || productsLoading || categoriesLoading || usersLoading) {
         return <div>Cargando dashboard...</div>;
     }
 
@@ -312,6 +317,15 @@ function DashboardOverview() {
                     <p className="text-4xl font-bold">{orders?.length ?? 0}</p>
                     </CardContent>
                 </Card>
+                 <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Clientes Registrados</CardTitle>
+                        <Users className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{users?.length ?? 0}</div>
+                    </CardContent>
+                </Card>
                 <Card>
                     <CardHeader>
                     <CardTitle>Total Productos</CardTitle>
@@ -319,15 +333,6 @@ function DashboardOverview() {
                     </CardHeader>
                     <CardContent>
                     <p className="text-4xl font-bold">{products?.length ?? 0}</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader>
-                    <CardTitle>Total Categorías</CardTitle>
-                    <CardDescription>Número total de categorías de productos.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                    <p className="text-4xl font-bold">{categories?.length ?? 0}</p>
                     </CardContent>
                 </Card>
             </div>
@@ -1793,6 +1798,48 @@ function LocationDialog({ setDialogOpen, location }: { setDialogOpen: (isOpen: b
         </DialogFooter>
       </form>
     </DialogContent>
+  );
+}
+
+function CustomerManagement() {
+  const firestore = useFirestore();
+  const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('points', 'desc')) : null, [firestore]);
+  const { data: users, isLoading } = useCollection<User>(usersQuery);
+
+  if (isLoading) return <div>Cargando clientes...</div>;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Ranking de Clientes</CardTitle>
+        <CardDescription>Lista de clientes registrados ordenados por sus puntos acumulados.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[80px]">Ranking</TableHead>
+              <TableHead>Nombre</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead className="text-right">Puntos</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {users && users.map((user, index) => (
+              <TableRow key={user.id}>
+                <TableCell className="font-bold text-lg text-center">{index + 1}</TableCell>
+                <TableCell className="font-medium">{user.name}</TableCell>
+                <TableCell>{user.email}</TableCell>
+                <TableCell className="text-right font-bold text-primary flex items-center justify-end gap-2">
+                  <Gift className="h-4 w-4" />
+                  {user.points || 0}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
   );
 }
 
