@@ -14,7 +14,7 @@
  * Orders are stored in `/orders/{orderId}`.
  *
  * Key Security Decisions:
- * - User listing is explicitly disallowed.
+ * - User listing is explicitly disallowed for regular users, but allowed for admins.
  * - Only authenticated users can access their own data. Admins can read any user data.
  * - Data consistency between the path (`userId`) and the document's `id` field is enforced.
  * - Users can only create their own profile with the 'user' role.
@@ -45,7 +45,7 @@ service cloud.firestore {
      * @allow (get) - An authenticated user can get their profile. An admin can get any profile.
      * @allow (update) - An authenticated user can update their own profile.
      * @allow (delete) - An authenticated user can delete their own profile.
-     * @deny (list) - Listing users is not allowed for anyone.
+     * @allow (list) - Listing users is allowed only for admins.
      */
     match /users/{userId} {
       function isOwner(userId) {
@@ -60,7 +60,7 @@ service cloud.firestore {
                    && request.resource.data.id == userId
                    && request.resource.data.role == 'user';
       allow get: if isOwner(userId) || isAdmin();
-      allow list: if false;
+      allow list: if isAdmin();
       allow update: if isExistingOwner(userId)
                     && request.resource.data.id == resource.data.id
                     && request.resource.data.role == resource.data.role;
