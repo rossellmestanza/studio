@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -45,21 +46,27 @@ export default function AuthPage() {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (!firestore) {
+      setError("La base de datos no está disponible. Inténtalo de nuevo más tarde.");
+      return;
+    }
     try {
       const userCredential = await initiateEmailSignUp(auth, email, password);
       if (userCredential && userCredential.user) {
         const user = userCredential.user;
-        await setDoc(doc(firestore, 'users', user.uid), {
+        const userDocRef = doc(firestore, 'users', user.uid);
+        await setDoc(userDocRef, {
           id: user.uid,
           email: user.email,
           name: name,
           role: 'user',
-        });
+        }, { merge: true }); // Use merge: true to create if not exists
       }
     } catch (err: any) {
       if (err.code) {
         setError(getFriendlyErrorMessage(err.code));
       } else {
+        console.error("Sign up error:", err);
         setError(getFriendlyErrorMessage(''));
       }
     }
@@ -74,6 +81,7 @@ export default function AuthPage() {
        if (err.code) {
         setError(getFriendlyErrorMessage(err.code));
       } else {
+        console.error("Sign in error:", err);
         setError(getFriendlyErrorMessage(''));
       }
     }
