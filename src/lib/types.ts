@@ -1,4 +1,5 @@
 
+
 import type { LucideIcon } from 'lucide-react';
 
 export interface MenuItemExtra {
@@ -54,6 +55,7 @@ export interface Order {
   total: number;
   status: OrderStatus;
   items: OrderItem[];
+  userId?: string;
 }
 
 
@@ -91,4 +93,5 @@ export interface User {
   email: string;
   name: string;
   role: 'user' | 'admin';
+  points?: number;
 }

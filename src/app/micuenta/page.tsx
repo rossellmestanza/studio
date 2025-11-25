@@ -6,15 +6,16 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, CookingPot, Truck, Package, Search } from 'lucide-react';
+import { CheckCircle, CookingPot, Truck, Package, Search, Gift, User as UserIcon } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useUser, useFirestore, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useMemoFirebase, useDoc } from '@/firebase';
 import { useRouter } from 'next/navigation';
-import type { Order } from '@/lib/types';
-import { collection, query, where, getDocs, limit, orderBy } from 'firebase/firestore';
+import type { Order, User } from '@/lib/types';
+import { collection, query, where, getDocs, limit, orderBy, doc } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const statusSteps = [
   { status: 'Recibido', icon: Package, description: 'Tu pedido ha sido recibido' },
@@ -59,6 +60,9 @@ export default function MyAccountPage() {
   const router = useRouter();
   const firestore = useFirestore();
 
+  const userDocRef = useMemoFirebase(() => (firestore && user) ? doc(firestore, 'users', user.uid) : null, [firestore, user]);
+  const { data: userData, isLoading: isUserDataLoading } = useDoc<User>(userDocRef);
+
   useEffect(() => {
     if (!isUserLoading && !user) {
       router.push('/auth');
@@ -101,7 +105,7 @@ export default function MyAccountPage() {
     }
   };
   
-  const renderContent = () => {
+  const renderOrderTrackerContent = () => {
     if (isLoadingOrder) {
         return (
             <Card className="shadow-lg mt-8">
@@ -175,42 +179,96 @@ export default function MyAccountPage() {
     return null;
   }
 
+  const renderMyAccountContent = () => {
+    if (isUserDataLoading) {
+      return (
+        <div className="space-y-4">
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-8 w-1/2" />
+          <Skeleton className="h-8 w-3/4" />
+        </div>
+      );
+    }
+    if (!userData) {
+      return <p>No se pudo cargar la información de tu cuenta.</p>
+    }
+    return (
+      <div className="space-y-6">
+        <Card className="bg-primary/10 border-primary">
+          <CardHeader className="flex-row items-center gap-4 space-y-0">
+            <Gift className="h-10 w-10 text-primary" />
+            <div>
+              <CardTitle>Mis Puntos</CardTitle>
+              <CardDescription>¡Gana puntos con cada compra y canjéalos por premios!</CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <p className="text-5xl font-bold text-primary">{userData.points || 0}</p>
+          </CardContent>
+        </Card>
+        <Card>
+            <CardHeader>
+                <CardTitle>Información de la cuenta</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-muted-foreground">
+                <p><strong>Nombre:</strong> {userData.name}</p>
+                <p><strong>Email:</strong> {userData.email}</p>
+            </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-8">
-              <h1 className="text-4xl font-bold">Seguimiento de Pedido</h1>
-              <p className="text-muted-foreground mt-1">Ingresa tu número de celular para ver el estado de tu último pedido a domicilio.</p>
+              <h1 className="text-4xl font-bold">Mi Cuenta</h1>
+              <p className="text-muted-foreground mt-1">Gestiona tu cuenta y haz seguimiento de tus pedidos.</p>
           </div>
-          
-          <Card>
-            <CardContent className="pt-6">
-              <form onSubmit={handleSearchOrder} className="flex flex-col sm:flex-row items-end gap-4">
-                <div className="w-full space-y-2">
-                  <Label htmlFor="phone-number">Número de Celular</Label>
-                   <div className="relative">
-                    <Input
-                      id="phone-number"
-                      type="tel"
-                      placeholder="999 999 999"
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
-                      required
-                    />
-                  </div>
-                </div>
-                <Button type="submit" className="w-full sm:w-auto" disabled={isLoadingOrder}>
-                  <Search className="mr-2 h-4 w-4" /> 
-                  {isLoadingOrder ? 'Buscando...' : 'Buscar Pedido'}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
 
-          {renderContent()}
+          <Tabs defaultValue="account" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="account"><UserIcon className="mr-2 h-4 w-4"/>Mi Cuenta</TabsTrigger>
+              <TabsTrigger value="tracker"><Search className="mr-2 h-4 w-4"/>Seguimiento</TabsTrigger>
+            </TabsList>
+            <TabsContent value="account" className="pt-6">
+              {renderMyAccountContent()}
+            </TabsContent>
+            <TabsContent value="tracker" className="pt-6">
+               <Card>
+                  <CardHeader>
+                    <CardTitle>Seguimiento de Pedido</CardTitle>
+                    <CardDescription>Ingresa tu número de celular para ver el estado de tu último pedido a domicilio.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleSearchOrder} className="flex flex-col sm:flex-row items-end gap-4">
+                      <div className="w-full space-y-2">
+                        <Label htmlFor="phone-number">Número de Celular</Label>
+                        <div className="relative">
+                          <Input
+                            id="phone-number"
+                            type="tel"
+                            placeholder="999 999 999"
+                            value={phoneNumber}
+                            onChange={(e) => setPhoneNumber(e.target.value)}
+                            required
+                          />
+                        </div>
+                      </div>
+                      <Button type="submit" className="w-full sm:w-auto" disabled={isLoadingOrder}>
+                        <Search className="mr-2 h-4 w-4" /> 
+                        {isLoadingOrder ? 'Buscando...' : 'Buscar'}
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
 
+                {renderOrderTrackerContent()}
+            </TabsContent>
+          </Tabs>
         </div>
       </main>
       <Footer />

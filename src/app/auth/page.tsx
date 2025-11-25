@@ -60,7 +60,8 @@ export default function AuthPage() {
           email: user.email,
           name: name,
           role: 'user',
-        }, { merge: true }); // Use merge: true to create if not exists
+          points: 0,
+        }, { merge: true });
       }
     } catch (err: any) {
       if (err.code) {

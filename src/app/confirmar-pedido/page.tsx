@@ -9,9 +9,9 @@ import { useCart } from '@/context/CartContext';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Separator } from '@/components/ui/separator';
-import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
-import type { BusinessInfo, Order, MenuItem } from '@/lib/types';
-import { doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useDoc, useFirestore, useMemoFirebase, useUser } from '@/firebase';
+import type { BusinessInfo, Order, MenuItem, MenuItemExtra, User } from '@/lib/types';
+import { doc, collection, addDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
 
 // Helper function to create a simplified version of cart items for the order
 const getOrderItems = (cartItems: (MenuItem & { quantity: number; selectedExtras: MenuItemExtra[] })[]) => {
@@ -29,6 +29,10 @@ export default function ConfirmarPedidoPage() {
   const { cartItems, cartTotal, customerData, clearCart } = useCart();
   const router = useRouter();
   const firestore = useFirestore();
+  const { user } = useUser();
+
+  const userDocRef = useMemoFirebase(() => (firestore && user) ? doc(firestore, 'users', user.uid) : null, [firestore, user]);
+  const { data: userData } = useDoc<User>(userDocRef);
 
   const businessInfoDoc = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'businessInfo') : null, [firestore]);
   const { data: businessInfo } = useDoc<BusinessInfo>(businessInfoDoc);
@@ -39,8 +43,7 @@ export default function ConfirmarPedidoPage() {
         return;
     }
 
-    // 1. Save order to Firestore
-    const ordersCollection = collection(firestore, 'orders');
+    // 1. Prepare order data
     const newOrder: Omit<Order, 'id'> = {
       customer: customerData.name,
       phone: customerData.phone,
@@ -54,12 +57,25 @@ export default function ConfirmarPedidoPage() {
       total: cartTotal,
       status: 'Recibido', // Initial status
       items: getOrderItems(cartItems),
+      ...(user && { userId: user.uid }),
     };
     
     try {
-      await addDoc(ordersCollection, newOrder);
+        const batch = writeBatch(firestore);
+        const ordersCollection = collection(firestore, 'orders');
+        batch.set(doc(ordersCollection), newOrder);
+
+        // If user is logged in, update their points
+        if (user && userData && userDocRef) {
+            const pointsEarned = Math.floor(cartTotal);
+            const newTotalPoints = (userData.points || 0) + pointsEarned;
+            batch.update(userDocRef, { points: newTotalPoints });
+        }
+        
+        await batch.commit();
+
     } catch(error) {
-        console.error("Error saving order to Firestore:", error);
+        console.error("Error saving order and updating points:", error);
         alert("Hubo un error al guardar tu pedido. Por favor, inténtalo de nuevo.");
         return;
     }
