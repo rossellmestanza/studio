@@ -4,9 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { CartProvider } from '@/context/CartContext';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
-import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
-import { doc }from 'firebase/firestore';
-import type { BusinessInfo } from '@/lib/types';
+
 
 export const metadata: Metadata = {
   title: 'Fly Menú Digital',
